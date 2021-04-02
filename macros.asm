@@ -255,13 +255,15 @@ IncContador macro numero
     mov al, numero[0]
     add al, 1
     mov numero[0], al
-    xor al,al
+    xor ax,ax
 endm
 
 Bubblesort_Ascendente macro vector
 LOCAL ciclo1, Inter, ciclo2, Inter2, condicion_if, fin
 	xor si,si
 	xor di,di
+	xor ax,ax
+	xor bx,bx
 	mov i[0],0 ; int i = 0
 	mov j[0],0 ; int j = 0
 	mov Count[0],0 ; int j = 0
@@ -329,6 +331,8 @@ Bubblesort_Descendente macro vector
 LOCAL ciclo1, Inter, ciclo2, Inter2, condicion_if, fin
 	xor si,si
 	xor di,di
+	xor ax,ax
+	xor bx,bx
 	mov i[0],0 ; int i = 0
 	mov j[0],0 ; int j = 0
 	mov Count[0],0 ; int j = 0
@@ -390,4 +394,256 @@ LOCAL ciclo1, Inter, ciclo2, Inter2, condicion_if, fin
 		;print saltolinea
 		;print tamanio_1
 		;print saltolinea
+endm
+
+Shellsort_Ascendente macro vector
+LOCAL Ciclo1, Inter1, Ciclo2, Inter2, condicion_if, condicion_while, InterW, fin
+	xor si,si
+	xor di,di
+	xor ax,ax
+	xor bx,bx
+	mov Count[0],0
+	mov i[0],0 ; int i = 0	
+	mov salto[0],0 ;salto = 0
+	mov aux[0],0 ;aux = 0
+	mov cambios[0],1 ;cambios = true
+
+	mov al,tamanio[0]
+	mov bl,2
+	div bl
+	mov salto[0],al ;salto = vector.length / 2
+	ciclo1:	
+		mov al, salto[0]
+		cmp al,0
+			je fin ;salto != 0 sale del ciclo
+		mov cambios[0],1 ;cambios = true;
+		jmp condicion_while
+
+	condicion_while:
+		mov cambios[0],0 ;cambios = false
+		xor ax,ax
+		xor bx,bx
+		mov al,salto[0]
+		mov i[0],al ; int i = salto
+		Salto_I ; asigna el valor de i si
+		jmp Ciclo2
+
+	Ciclo2:
+		xor ax,ax
+		mov al, vector[si]	
+		mov vecI[0],al ; vector[i]
+		
+		push si
+		xor si,si
+		Salto_indice
+		mov al, vector[si]	
+		mov vecI_salto[0],al ; vector[i - salto]
+		xor si,si
+		pop si
+		
+		mov al,vecI_salto[0]
+		mov bl,vecI[0]
+		cmp al,bl ;if (vector[i - salto] > vector[i])
+			jg condicion_if
+
+		IncContador i
+		inc si
+		jmp Inter2
+
+	condicion_if:
+		xor ax,ax
+		mov al, vecI[0]
+		mov aux[0],al ;aux = vector[i]; 
+		
+		mov al,vecI_salto[0]
+		mov vector[si], al ;vector[i] = vector[i - salto];
+
+		push si
+		xor si,si
+		Salto_indice
+		mov al,aux[0]
+		mov vector[si],al ;vector[i - salto] = aux;
+		xor si,si
+		pop si
+
+		mov cambios[0],1 ;cambios = true;
+
+		IncContador i
+		inc si
+
+		print vector
+		print saltolinea
+		Delay
+
+		jmp Inter2
+
+	Inter2:
+		xor ax,ax
+		xor bx,bx
+		mov al,i[0]
+		mov bl,tamanio[0]		
+		cmp al,bl
+			jl Ciclo2
+		jmp InterW
+	
+	InterW:
+		xor ax,ax
+		xor bx,bx
+		mov al, cambios[0]
+		cmp al,1
+			je condicion_while
+		jmp Inter1
+		
+
+	Inter1:
+		xor ax,ax
+		xor bx,bx
+		mov al,salto[0]
+		mov bl,2
+		div bl
+		mov salto[0],al
+		jmp ciclo1
+
+	fin:
+		print saltolinea
+		print vector 
+endm
+
+Shellsort_Descendente macro vector
+LOCAL Ciclo1, Inter1, Ciclo2, Inter2, condicion_if, condicion_while, InterW, fin
+	xor si,si
+	xor di,di
+	xor ax,ax
+	xor bx,bx
+	mov Count[0],0
+	mov i[0],0 ; int i = 0	
+	mov salto[0],0 ;salto = 0
+	mov aux[0],0 ;aux = 0
+	mov cambios[0],1 ;cambios = true
+
+	mov al,tamanio[0]
+	mov bl,2
+	div bl
+	mov salto[0],al ;salto = vector.length / 2
+	ciclo1:	
+		mov al, salto[0]
+		cmp al,0
+			je fin ;salto != 0 sale del ciclo
+		mov cambios[0],1 ;cambios = true;
+		jmp condicion_while
+
+	condicion_while:
+		mov cambios[0],0 ;cambios = false
+		xor ax,ax
+		xor bx,bx
+		mov al,salto[0]
+		mov i[0],al ; int i = salto
+		Salto_I ; asigna el valor de i si
+		jmp Ciclo2
+
+	Ciclo2:
+		xor ax,ax
+		mov al, vector[si]	
+		mov vecI[0],al ; vector[i]
+		
+		push si
+		xor si,si
+		Salto_indice
+		mov al, vector[si]	
+		mov vecI_salto[0],al ; vector[i - salto]
+		xor si,si
+		pop si
+		
+		mov al,vecI_salto[0]
+		mov bl,vecI[0]
+		cmp al,bl ;if (vector[i - salto] > vector[i])
+			jl condicion_if
+
+		IncContador i
+		inc si
+		jmp Inter2
+
+	condicion_if:
+		xor ax,ax
+		mov al, vecI[0]
+		mov aux[0],al ;aux = vector[i]; 
+		
+		mov al,vecI_salto[0]
+		mov vector[si], al ;vector[i] = vector[i - salto];
+
+		push si
+		xor si,si
+		Salto_indice
+		mov al,aux[0]
+		mov vector[si],al ;vector[i - salto] = aux;
+		xor si,si
+		pop si
+
+		mov cambios[0],1 ;cambios = true;
+
+		IncContador i
+		inc si
+
+		print vector
+		print saltolinea
+		Delay
+
+		jmp Inter2
+
+	Inter2:
+		xor ax,ax
+		xor bx,bx
+		mov al,i[0]
+		mov bl,tamanio[0]		
+		cmp al,bl
+			jl Ciclo2
+		jmp InterW
+	
+	InterW:
+		xor ax,ax
+		xor bx,bx
+		mov al, cambios[0]
+		cmp al,1
+			je condicion_while
+		jmp Inter1
+		
+
+	Inter1:
+		xor ax,ax
+		xor bx,bx
+		mov al,salto[0]
+		mov bl,2
+		div bl
+		mov salto[0],al
+		jmp ciclo1
+
+	fin:
+		print vector
+		print saltolinea
+endm
+
+Salto_I macro
+LOCAL ciclo
+	xor cx,cx
+	xor ax,ax
+	xor si,si
+	mov al,salto[0]
+	mov cl,al ;Numero de veces que va hacer el ciclo
+	ciclo:
+		inc si		
+	loop ciclo
+endm
+
+Salto_indice macro
+LOCAL ciclo
+	xor cx,cx
+	xor bx,bx
+	xor ax,ax
+	mov al,i[0]
+	mov bl,salto[0]
+	sub al,bl
+	mov cl,al ;Numero de veces que va hacer el ciclo
+	ciclo:
+		inc si
+	loop ciclo
 endm

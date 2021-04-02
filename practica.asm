@@ -60,6 +60,13 @@ j db 2 dup('$')
 vecJ db 2 dup('$')
 vecJmas1 db 2 dup('$')
 
+;Ordenamiento shell
+vecI db 2 dup('$')
+vecI_salto db 2 dup('$')
+salto db 2 dup('$')
+aux db 2 dup('$')
+cambios db 2 dup('$')
+
 ;Delay
 tiempo db 2 dup('$')
 
@@ -185,6 +192,7 @@ main proc
         print cadena_velocidad ;Determinamos la velocidad de la simulacion
         print saltolinea
         getChar
+        mov tiempo[0],al
         cmp al, 48 ;Si es menor a 0 se repite el menu
             jl Shellsort
         cmp al, 57
@@ -206,8 +214,10 @@ main proc
         jmp ASC_DES_Shellsort
 
     ASC_Shellsort:
+        Shellsort_Ascendente Vec_Shell
         jmp menu
     DES_Shellsort:
+        Shellsort_Descendente Vec_Shell
         jmp menu
 
     Error1:
