@@ -67,6 +67,16 @@ salto db 2 dup('$')
 aux db 2 dup('$')
 cambios db 2 dup('$')
 
+;Ordenamiento Quick
+buf db 2 dup('$')
+from db 2 dup('$')
+to db 2 dup('$')
+pivot db 2 dup('$')
+matrix_from db 2 dup('$')
+matrix_to db 2 dup('$')
+A db 2 dup('$')
+B db 2 dup('$')
+
 ;Delay
 tiempo db 2 dup('$')
 
@@ -184,8 +194,38 @@ main proc
         jmp ASC_DES_Quicksort
     
     ASC_Quicksort:
+        xor ax,ax
+        xor bx,bx
+        
+        mov al,0
+        mov from[0],al; Asignar 0 a from
+        mov A[0],al
+        
+        mov al,tamanio[0]
+        mov bl,1
+        sub al,bl
+        mov to[0],al ;Asignar el tamanio-1 a to
+        mov B[0],al
+        
+        mov al, to[0]
+        mov bl,2
+        div bl
+        mov pivot[0],al 
+        MoverSi pivot
+        mov al,Vec_Quick[si]
+        mov pivot[0],al ;Asignamos a pivot el Valor de la mitad
+        
+        call Quicksort_Ascendente
+        
+
+        
+        print saltolinea
+        print Vec_Original
+        print saltolinea
+        print Vec_Quick
         jmp menu
     DES_Quicksort:
+        ;call Quicksort_Descendente
         jmp menu
 
     Shellsort:
@@ -337,4 +377,150 @@ main proc
     salir:
 		close
 main endp
+
+Quicksort_Ascendente proc
+
+    DoWhile: 
+        MoverSi from
+        mov al, Vec_Quick[si]
+        mov matrix_from[0],al ; Se obtiene el valor de matrix[from]
+        cmp al,pivot[0]
+            jb Ciclo1
+
+        MoverSi to
+        mov al,Vec_Quick[si]    
+        mov matrix_to[0],al
+        cmp al,pivot[0] ; Se obtiene el valor de matrix[to]
+            ja Ciclo2
+
+        jmp condicion_if   
+
+    Ciclo1: 
+        mov al,from[0]
+        mov bl,1
+        add al,bl
+        mov from[0],al ; from++
+        
+        MoverSi from
+        mov al,Vec_Quick[si]
+        mov matrix_from[0],al ;Se actualiza matriz[from]
+        cmp al,pivot[0] ; (matrix[from] < pivot)
+            jb Ciclo1
+        
+        MoverSi to
+        mov al,Vec_Quick[si]    
+        mov matrix_to[0],al ; Se obtiene el valor de matrix[to]
+        cmp al,pivot[0] ; (matrix[to] > pivot)
+            ja Ciclo2
+        
+        jmp condicion_if
+
+    Ciclo2:
+        mov al,to[0]
+        mov bl,1
+        sub al,bl
+        mov to[0],al ; to--
+
+        MoverSi to
+        mov al,Vec_Quick[si]    
+        mov matrix_to[0],al
+        cmp al,pivot[0] ;While(matrix[to] > pivot)
+            ja Ciclo2
+        jmp condicion_if
+
+    condicion_if:
+        mov al,from[0]
+        cmp al,to[0]
+            jbe accion_if
+        jmp condicion_DoWhile
+       
+    accion_if:
+        MoverSi from
+        mov al,Vec_Quick[si]
+        mov matrix_from[0],al; actualizo matrix[from]
+
+        MoverSi to
+        mov al,Vec_Quick[si]
+        mov matrix_to[0],al; actualizo matrix[to]
+
+        mov al,matrix_from[0]
+        mov buf[0],al ;buf = matrix[from];
+
+        MoverSi from
+        mov al,matrix_to[0]
+        mov Vec_Quick[si],al ; matrix[from] = matrix[to];
+
+        MoverSi to
+        mov al,buf[0]
+        mov Vec_Quick[si],al ; matrix[to] = buf;
+
+        mov al,from[0]
+        mov bl,1
+        add al,bl
+        mov from[0],al ; from++
+
+        mov al,to[0]
+        mov bl,1
+        sub al,bl
+        mov to[0],al ; to--
+
+        MoverSi from
+        mov al,Vec_Quick[si]
+        mov matrix_from[0],al; actualizo matrix[from]
+
+        MoverSi to
+        mov al,Vec_Quick[si]
+        mov matrix_to[0],al; actualizo matrix[to]
+
+        jmp condicion_DoWhile
+
+    condicion_DoWhile:
+        mov al,from[0]
+        cmp al,to[0]
+            jbe DoWhile
+        jmp Condicion_Derecho
+
+    Condicion_Derecho:
+        mov al, A[0]
+        cmp al,to[0] ;if(a < to)
+            jb Recursividad_Derecha
+        jmp Condicion_Izquierda
+
+    Recursividad_Derecha:
+        push A
+        push B
+        Push to
+        push from
+        mov al,to[0]
+        mov B[0],al
+        call Quicksort_Ascendente
+        pop from
+        pop to
+        pop B
+        pop A
+        jmp Condicion_Izquierda
+
+    Condicion_Izquierda:
+        mov al, from[0]
+        cmp al,B[0] ; if(from < b)
+            jb Recursividad_Izquierda
+        jmp fin
+
+    Recursividad_Izquierda:
+        push A
+        push B
+        Push to
+        push from
+        mov al,from[0]
+        mov A[0],al
+        call Quicksort_Ascendente
+        pop from
+        pop to
+        pop B
+        pop A
+        jmp fin
+
+    fin:
+        ret
+Quicksort_Ascendente endp
 end main

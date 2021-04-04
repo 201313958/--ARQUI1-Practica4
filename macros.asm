@@ -622,6 +622,18 @@ LOCAL Ciclo1, Inter1, Ciclo2, Inter2, condicion_if, condicion_while, InterW, fin
 		print saltolinea
 endm
 
+MoverSi macro numero
+LOCAL ciclo
+	xor cx,cx
+	xor ax,ax
+	xor si,si
+	mov al,numero[0]
+	mov cl,al ;Numero de veces que va hacer el ciclo
+	ciclo:
+		inc si		
+	loop ciclo
+endm
+
 Salto_I macro
 LOCAL ciclo
 	xor cx,cx
