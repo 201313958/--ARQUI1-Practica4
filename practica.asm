@@ -80,11 +80,29 @@ B db 2 dup('$')
 ;Delay
 tiempo db 2 dup('$')
 
-.code
-mov dx,@data
-mov ds,dx
+;Modo Video 
+Ordenamiento_Burbuja db 'Ordenamiento: BubbleSort', '$'
+Ordenamiento_Shell db   'Ordenamiento: ShellSort', '$'
+Ordenamiento_Quick db   'Ordenamiento: QuickSort', '$'
+Cadena_vel db 'Velocidad: ', '$'
+Cadena_Tiempo db        'Tiempo: ', '$'
+Fila db 0
+Fila_Actual db 0
+Columna db 0
+Columna_Actual db 0
+Espacio_Vector db 2 dup('$')
+Num_vector db 2 dup('$')
 
-main proc
+.code
+main proc far
+
+    mov ax,@data
+    mov ds,ax
+
+    
+    ;jmp salir
+
+    ;---------- Se Imprime el Encabezado --------------
 	encabezado:
         print encabezado1
 		print encabezado2
@@ -96,8 +114,8 @@ main proc
 		print encabezado8
 		print saltolinea
         jmp menu	
-
-	menu:        
+    ;---------- Se Imprime el Menu --------------------
+    menu:        
 		print cadena_menu1
 		print cadena_opcion1
 		print cadena_opcion2
@@ -116,7 +134,7 @@ main proc
 		cmp al,52 ;mnemonio 34h = 4 en hexadecimal, ascii 52
 			je salir
 		jmp menu
-
+    ;---------- Se Imprime el menu de ordenamientos ---
     menu_ordenar:
         print saltolinea
         print cadena_menu_ordenar
@@ -133,7 +151,7 @@ main proc
 		cmp al,51 ;mnemonio 33h = 3 en hexadecimal, ascii 51
 			je Shellsort
         jmp menu_ordenar
-
+    ;---------- Ordenamiento BubbleSort, Velocidad ----
     Bubblesort:
         print cadena_velocidad ;Determinamos la velocidad de la simulacion
         print saltolinea
@@ -158,17 +176,20 @@ main proc
         cmp al, 50
             je DES_Bubblesort ;Bubblesort Descendente
         jmp ASC_DES_Bublesort
-
+    
+    ;---------- Ordenamiento BubbleSort Ascendente-----
     ASC_Bubblesort:
         print saltolinea
         Bubblesort_Ascendente Vec_Bubble
-        jmp menu
 
+        jmp menu
+    
+    ;---------- Ordenamiento BubbleSort Desscendente---
     DES_Bubblesort:
         print saltolinea
         Bubblesort_Descendente Vec_Bubble
         jmp menu
-
+    ;---------- Ordenamiento QuickSort, Velocidad -----
     Quicksort:
         print cadena_velocidad ;Determinamos la velocidad de la simulacion
         print saltolinea
@@ -192,7 +213,7 @@ main proc
         cmp al, 50
             je DES_Quicksort ;Quicksort Descendente
         jmp ASC_DES_Quicksort
-    
+    ;---------- Ordenamiento QuickSort Ascendente -----
     ASC_Quicksort:
         xor ax,ax
         xor bx,bx
@@ -224,10 +245,12 @@ main proc
         print saltolinea
         print Vec_Quick
         jmp menu
+
+    ;---------- Ordenamiento QuickSort Descendente ----    
     DES_Quicksort:
         ;call Quicksort_Descendente
         jmp menu
-
+    ;---------- Ordenamiento ShellSort, Velocidad -----
     Shellsort:
         print cadena_velocidad ;Determinamos la velocidad de la simulacion
         print saltolinea
@@ -238,7 +261,6 @@ main proc
         cmp al, 57
             jg Shellsort ;Si es mayor a 9 se repite el menu
         jmp ASC_DES_Shellsort
-
     ASC_DES_Shellsort:
         print saltolinea
         print cadena_menu_tipo
@@ -253,25 +275,29 @@ main proc
             je DES_Shellsort ;Bubblesort Descendente
         jmp ASC_DES_Shellsort
 
+    ;---------- Ordenamiento ShellSort Ascendente ----
     ASC_Shellsort:
         Shellsort_Ascendente Vec_Shell
         jmp menu
+
+    ;---------- Ordenamiento ShellSort Descendente ----    
     DES_Shellsort:
         Shellsort_Descendente Vec_Shell
         jmp menu
 
+    ;---------- Error para la carga de archivos -------
     Error1:
 		print saltolinea
 		print err1
 		getChar
 		jmp menu
-	
+	;---------- Error para la carga de archivos -------
 	Error5:
 		print saltolinea
 		print err5
 		getChar
 		jmp menu
-    
+    ;---------- Carga de Archivos ---------------------
     carga_archivos:
         mov tamanio[0],0
         print saltolinea
@@ -290,25 +316,27 @@ main proc
         xor si,si
         xor di,di
         jmp Encontrar_Mayor_inicial
-    
+
+    ;---------- Encuentra el primer > de la 1er etiqueta ----
     Encontrar_Mayor_inicial:
-    mov al, bufferInformacion1[si]
-    cmp al,62 ; Encuentra el > en los caracteres
-        je EsNumero
-    inc si
-    jmp Encontrar_Mayor_inicial
-
+        mov al, bufferInformacion1[si]
+        cmp al,62 ; Encuentra el > en los caracteres
+            je EsNumero
+        inc si
+        jmp Encontrar_Mayor_inicial
+    ;---------- Encuentra el primer > de cualquier etiqueta ----
     Encontrar_Mayor:
-    mov al, bufferInformacion1[si]
-    cmp al,62 ; Encuentra el > en los caracteres
-        je EsNumero
-    cmp al,83 ; Encuentra el S en los caracteres
-        je Carga_exito
-    cmp al,115 ; Encuentra el s en los caracteres
-        je Carga_exito
-    inc si
-    jmp Encontrar_Mayor
+        mov al, bufferInformacion1[si]
+        cmp al,62 ; Encuentra el > en los caracteres
+            je EsNumero
+        cmp al,83 ; Encuentra el S en los caracteres
+            je Carga_exito
+        cmp al,115 ; Encuentra el s en los caracteres
+            je Carga_exito
+        inc si
+        jmp Encontrar_Mayor
 
+    ;---------- Determina si el contenido es un numero ----
     EsNumero:
         inc si 
         mov al, bufferInformacion1[si]
@@ -317,7 +345,8 @@ main proc
         cmp al,57
             jg Encontrar_Mayor
         jmp Capturar_Numero
-    
+
+    ;---------- Si es un Numero Captura su valor ----------
     Capturar_Numero:
         mov NumTemp[0],al
         inc si 
@@ -330,6 +359,7 @@ main proc
             jg Un_digito
         jmp dos_digitos
 
+    ;---------- Numero de un solo digito ------------------
     Un_digito:
         mov al, NumTemp[0] ;Obtenemos el primer numero numero en ascii de la cadena
         sub al,30h ;Le restamos 0 para obtener su numero digital
@@ -344,6 +374,7 @@ main proc
         ;print saltolinea
         jmp Encontrar_Mayor
 
+    ;---------- Numero de dos digitos ---------------------
     dos_digitos:
         mov NumTemp[1],al 
         mov al, NumTemp[0] ;Obtenemos el primer numero numero en ascii de la cadena
@@ -366,18 +397,304 @@ main proc
         ;print Vec_Original
         ;print saltolinea
         jmp Encontrar_Mayor
-    
+
+    ;---------- Mensaje de que se cargo con exito ----------
     Carga_exito:
         ;print Vec_Original
         print SeCargoExito
         print saltolinea
-        ;print tamanio
+        ;NumToAscii tamanio
+        
+        call INI_VIDEO ; Inicia Modo Video
+        
+        mov Fila, 1
+        mov Columna, 1
+        call Set_Cursor
+        print Ordenamiento_Burbuja ; Tipo de Ordenamiento
+
+        mov Fila, 1
+        mov Columna, 40
+        call Set_Cursor
+        print Cadena_Tiempo ; Tiempo que tarda
+        
+        mov Fila, 1
+        mov Columna, 65
+        call Set_Cursor
+        print Cadena_vel ; La velocidad 
+        
+        call Pintar_Vector_Burbuja
+
+        Pintar_Barra 10d, 90d, 40d, 170d, 01h
+
+        pintar_marco 21d, 190d, 10d, 630, 0fh ;Pinta el marco
+        
+        Delay_Num 2000 ;Delay entre ordenamiento
+        
+        call FIN_VIDEO ;Finaliza modo video
+
         jmp menu
     
+    ;---------- Termina el programa ------------------------
     salir:
 		close
 main endp
 
+
+; =============================Pasar de decimas a Ascii el vector
+;Trasndormar cada numero a ascci y guardarlo en una var temp para imprimirlo
+
+;-------------- Determina el espacio entre numeros ---------
+Determinar_espacio_Num proc
+    xor ax,ax
+    mov al, tamanio[0]
+    cmp al,10
+        je Espacio10
+    cmp al,11
+        je Espacio11
+    cmp al,12
+        je Espacio12
+    cmp al,13
+        je Espacio13
+    cmp al,14
+        je Espacio14
+    cmp al,15
+        je Espacio15
+    cmp al,16
+        je Espacio16
+    cmp al,17
+        je Espacio17
+    cmp al,18
+        je Espacio18
+    cmp al,19
+        je Espacio19
+    cmp al,20
+        je Espacio20
+    cmp al,21
+        je Espacio21
+    cmp al,22
+        je Espacio22
+    cmp al,23
+        je Espacio23
+    cmp al,24
+        je Espacio24
+    cmp al,25
+        je Espacio25
+
+    Espacio10:
+        mov Espacio_Vector[0],7
+        mov Fila, 22    
+        mov Columna, -1
+        mov al,Columna
+        mov Columna_Actual,al ;Guardamos la fila actual
+        jmp fin
+
+    Espacio11:
+        mov Espacio_Vector[0],7
+        mov Fila, 22    
+        mov Columna, -3
+        mov al,Columna
+        mov Columna_Actual,al ;Guardamos la fila actual
+        jmp fin
+    
+    Espacio12:
+        mov Espacio_Vector[0],6
+        mov Fila, 22    
+        mov Columna, 0
+        mov al,Columna
+        mov Columna_Actual,al ;Guardamos la fila actual
+        jmp fin
+
+    Espacio13:
+        mov Espacio_Vector[0],6
+        mov Fila, 22    
+        mov Columna, -3
+        mov al,Columna
+        mov Columna_Actual,al ;Guardamos la fila actual
+        jmp fin
+
+    Espacio14:
+        mov Espacio_Vector[0],5
+        mov Fila, 22    
+        mov Columna, 1
+        mov al,Columna
+        mov Columna_Actual,al ;Guardamos la fila actual
+        jmp fin
+    
+    Espacio15:
+        mov Espacio_Vector[0],5
+        mov Fila, 22    
+        mov Columna, -1
+        mov al,Columna
+        mov Columna_Actual,al ;Guardamos la fila actual
+        jmp fin
+    
+    Espacio16:
+        mov Espacio_Vector[0],5
+        mov Fila, 22    
+        mov Columna, -3
+        mov al,Columna
+        mov Columna_Actual,al ;Guardamos la fila actual
+        jmp fin
+    
+    Espacio17:
+        mov Espacio_Vector[0],4
+        mov Fila, 22    
+        mov Columna, 3
+        mov al,Columna
+        mov Columna_Actual,al ;Guardamos la fila actual
+        jmp fin
+
+    Espacio18:
+        mov Espacio_Vector[0],4
+        mov Fila, 22    
+        mov Columna, 1
+        mov al,Columna
+        mov Columna_Actual,al ;Guardamos la fila actual
+        jmp fin
+
+    Espacio19:
+        mov Espacio_Vector[0],4
+        mov Fila, 22    
+        mov Columna, -1
+        mov al,Columna
+        mov Columna_Actual,al ;Guardamos la fila actual
+        jmp fin
+
+    Espacio20:
+        mov Espacio_Vector[0],3
+        mov Fila, 22    
+        mov Columna, 6
+        mov al,Columna
+        mov Columna_Actual,al ;Guardamos la fila actual
+        jmp fin
+        
+    Espacio21:
+        mov Espacio_Vector[0],3
+        mov Fila, 22    
+        mov Columna, 4
+        mov al,Columna
+        mov Columna_Actual,al ;Guardamos la fila actual
+        jmp fin
+
+    Espacio22:
+        mov Espacio_Vector[0],3
+        mov Fila, 22    
+        mov Columna, 3
+        mov al,Columna
+        mov Columna_Actual,al ;Guardamos la fila actual
+        jmp fin
+
+    Espacio23:
+        mov Espacio_Vector[0],3
+        mov Fila, 22    
+        mov Columna, 2
+        mov al,Columna
+        mov Columna_Actual,al ;Guardamos la fila actual
+        jmp fin
+
+    Espacio24:
+        mov Espacio_Vector[0],3
+        mov Fila, 22    
+        mov Columna, 1
+        mov al,Columna
+        mov Columna_Actual,al ;Guardamos la fila actual
+        jmp fin
+
+    Espacio25:
+        mov Espacio_Vector[0],3
+        mov Fila, 22    
+        mov Columna, 0
+        mov al,Columna
+        mov Columna_Actual,al ;Guardamos la fila actual
+        jmp fin
+    
+    fin:
+        ret 
+Determinar_espacio_Num endp
+
+;-------------- Pintar Vector Burbuja ----------------------
+Pintar_Vector_Burbuja proc
+    xor ax,ax
+    xor bx,bx
+    xor si,si
+    xor cx,cx
+
+    call Determinar_espacio_Num
+    mov cl,tamanio[0]
+    Ciclo:
+        mov Fila, 22
+        mov al,Columna_Actual
+        mov bl,Espacio_Vector[0]
+        add al,bl
+        mov Columna_Actual,al
+        mov Columna,al
+        call Set_Cursor
+          
+        mov al, Vec_Bubble[si]
+        mov Num_vector[0],al
+        NumToAscii Num_vector
+        inc si
+    loop Ciclo
+    ret
+Pintar_Vector_Burbuja endp
+
+;-------------- Pintar Vector Shell ----------------------
+Pintar_Vector_Shell proc
+    xor ax,ax
+    xor bx,bx
+    xor si,si
+    xor cx,cx
+
+    call Determinar_espacio_Num
+    mov cl,tamanio[0]
+    Ciclo:
+        mov Fila, 22
+        mov al,Columna_Actual
+        mov bl,Espacio_Vector[0]
+        add al,bl
+        mov Columna_Actual,al
+        mov Columna,al
+        call Set_Cursor
+          
+        mov al, Vec_Shell[si]
+        mov Num_vector[0],al
+        NumToAscii Num_vector
+        inc si
+    loop Ciclo
+    ret
+Pintar_Vector_Shell endp
+
+;-------------- Inicia modo Video --------------------------
+INI_VIDEO proc
+	mov ax, 00Eh
+	int 10h
+	ret
+INI_VIDEO endp
+
+;-------------- Fin modo Video -----------------------------
+FIN_VIDEO proc
+	mov ax, 0003h
+	int 10h
+	ret
+FIN_VIDEO endp
+
+;-------------- Posicionar el Cursor -----------------------
+Set_Cursor proc
+        xor ax,ax
+		xor bx,bx
+		mov ah, 02
+		mov bh, 00
+        xor dx,dx
+		mov dl, Columna ; columnas
+		mov dh, Fila ; filas
+		int 10h
+		xor ax,ax
+		xor bx,bx
+		xor dx,dx
+        ret
+Set_Cursor endp
+
+;-------------- Pendiente ----------------------------------
 Quicksort_Ascendente proc
 
     DoWhile: 
@@ -478,48 +795,7 @@ Quicksort_Ascendente proc
         mov al,from[0]
         cmp al,to[0]
             jbe DoWhile
-        jmp Condicion_Derecho
-
-    Condicion_Derecho:
-        mov al, A[0]
-        cmp al,to[0] ;if(a < to)
-            jb Recursividad_Derecha
-        jmp Condicion_Izquierda
-
-    Recursividad_Derecha:
-        push A
-        push B
-        Push to
-        push from
-        mov al,to[0]
-        mov B[0],al
-        call Quicksort_Ascendente
-        pop from
-        pop to
-        pop B
-        pop A
-        jmp Condicion_Izquierda
-
-    Condicion_Izquierda:
-        mov al, from[0]
-        cmp al,B[0] ; if(from < b)
-            jb Recursividad_Izquierda
         jmp fin
-
-    Recursividad_Izquierda:
-        push A
-        push B
-        Push to
-        push from
-        mov al,from[0]
-        mov A[0],al
-        call Quicksort_Ascendente
-        pop from
-        pop to
-        pop B
-        pop A
-        jmp fin
-
     fin:
         ret
 Quicksort_Ascendente endp

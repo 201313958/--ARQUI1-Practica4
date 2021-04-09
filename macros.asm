@@ -160,6 +160,25 @@ leer macro handler,buffer, numbytes
 	;en el buffer se guarda la información
 endm
 
+Delay_Num macro param   
+		push ax
+		push bx
+		xor ax, ax
+		xor bx, bx
+        mov ax,param
+        ret2:
+			dec ax
+			jz finRet
+			mov bx, param
+			ret1:
+				dec bx
+			jnz ret1
+		jmp ret2                
+        finRet:
+        pop bx
+		pop ax
+endm 
+
 Delay macro 
 LOCAL Seg_0, Seg_1, Seg_2, Seg_3, Seg_4, Seg_5, Seg_6, Seg_7, Seg_8, Seg_9, fin
 	mov al,tiempo[0]
@@ -313,9 +332,12 @@ LOCAL ciclo1, Inter, ciclo2, Inter2, condicion_if, fin
 		mov al, temp[0]
 		mov vector[di],al ;vector[j+1] = temp;
 		dec di
-		print vector
-		print saltolinea
-		Delay
+		
+		
+		;print vector
+		;print saltolinea
+		;Delay		
+
 		jmp Inter2
 
 	fin:
@@ -659,3 +681,101 @@ LOCAL ciclo
 		inc si
 	loop ciclo
 endm
+
+;Encargado de pintar un pixel en (i, j) => 320 * i + j --> 320 decimal => 140 hexadecimal
+	pintar_pixel macro i, j, color
+		push ax
+		push bx
+		push di
+		xor ax, ax
+		xor bx, bx
+		xor di, di
+		mov ax, 320d
+		mov bx, i
+		mul bx
+		add ax, j
+		mov di, ax
+		mov [di], color
+		pop di
+		pop bx
+		pop ax
+	endm
+
+	pintar_marco macro izq, der, arr, aba, color
+		LOCAL ciclo1, ciclo2
+		push si
+		xor si, si
+		mov si, izq
+		ciclo1:
+			pintar_pixel arr, si, color
+			pintar_pixel aba, si, color
+			inc si
+			cmp si, der
+		jne ciclo1
+
+		xor si, si
+		mov si, arr
+		ciclo2:
+			pintar_pixel si, der, color
+			pintar_pixel si, izq, color
+			inc si
+			cmp si, aba
+		jne ciclo2
+		pop si
+	endm
+
+	pintar_marco macro izq, der, arr, aba, color
+		LOCAL ciclo1, ciclo2
+		push si
+		xor si, si
+		mov si, izq
+		ciclo1:
+			pintar_pixel arr, si, color
+			pintar_pixel aba, si, color
+			inc si
+			cmp si, der
+		jne ciclo1
+
+		xor si, si
+		mov si, arr
+		ciclo2:
+			pintar_pixel si, der, color
+			pintar_pixel si, izq, color
+			inc si
+			cmp si, aba
+		jne ciclo2
+		pop si
+	endm
+
+	pintar_pixel macro i, j, color
+        mov al, color ; Color
+        mov cx, i    ; Columna        
+        mov dx, j    ; fila
+        mov ah, 0ch   ; Interrupcion para hacer una pixel
+        int 10h     ; set pixel. 
+ 
+	endm
+
+	Pintar_Barra macro ancho, alto, inicio_i, inico_j, color
+	LOCAL Ciclo1, Ciclo2
+	endm
+
+	Delay_Num macro param   
+		push ax
+		push bx
+		xor ax, ax
+		xor bx, bx
+        mov ax,param
+        ret2:
+			dec ax
+			jz finRet
+			mov bx, param
+			ret1:
+				dec bx
+			jnz ret1
+		jmp ret2                
+        finRet:
+        pop bx
+		pop ax
+    endm 
+	

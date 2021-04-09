@@ -37,9 +37,11 @@ public class HelloWorld{
                 from++; to--;
             }
         }while(from <= to);
+
         if(a < to) {
             Quicksort(matrix, a, to);
         }
+        
         if(from < b){
             Quicksort(matrix, from, b);
         }
