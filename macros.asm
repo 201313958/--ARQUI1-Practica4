@@ -204,21 +204,21 @@ LOCAL Seg_0, Seg_1, Seg_2, Seg_3, Seg_4, Seg_5, Seg_6, Seg_7, Seg_8, Seg_9, fin
 		je Seg_9	
 	Seg_0:
 		jmp fin
-	Seg_1:
+	Seg_1: ; 500ms
 		mov cx,0007h
 		mov dx,0A120h
 		mov ah,86h
 		mov al,0
 		int 15h
 		jmp fin
-	Seg_2:
+	Seg_2: ;1seg
 		mov cx,000Fh
 		mov dx,04240h
 		mov ah,86h
 		mov al,0
 		int 15h
 		jmp fin
-	Seg_3:
+	Seg_3: ;1.5 seg
 		mov cx,0016h
 		mov dx,0E360h
 		mov ah,86h
@@ -277,6 +277,24 @@ IncContador macro numero
     xor ax,ax
 endm
 
+llenar_Vector macro original, vec
+LOCAL Ciclo1, fin
+	push si
+	xor si,si
+	mov temp[0],0
+	Ciclo1:
+		mov al,original[si]
+		mov vec[si],al
+		inc si
+		IncContador temp
+		mov al,temp[0]
+		cmp al,tamanio[0]
+			je fin
+		jmp Ciclo1
+	fin:
+		pop si
+endm
+
 Bubblesort_Ascendente macro vector
 LOCAL ciclo1, Inter, ciclo2, Inter2, condicion_if, fin
 	xor si,si
@@ -333,6 +351,47 @@ LOCAL ciclo1, Inter, ciclo2, Inter2, condicion_if, fin
 		mov vector[di],al ;vector[j+1] = temp;
 		dec di
 		
+		push di
+		push si
+		xor si,si
+		xor di,di
+
+		call INI_VIDEO ; Inicia Modo Video
+        
+        mov Fila, 1
+        mov Columna, 1
+        call Set_Cursor
+        print Ordenamiento_Burbuja ; Tipo de Ordenamiento
+
+        mov Fila, 1
+        mov Columna, 40
+        call Set_Cursor
+        print Cadena_Tiempo ; Tiempo que tarda
+        
+        mov Fila, 1
+        mov Columna, 64
+        call Set_Cursor
+        print Cadena_vel ; La velocidad 
+		
+		mov Fila, 1
+        mov Columna, 76
+        call Set_Cursor
+		print tiempo
+
+        call Pintar_Barras
+
+        call Pintar_Vector
+
+        ;Pintar_Barra 10d, 90d, 40d, 170d, 01h
+
+        pintar_marco 21d, 190d, 10d, 630, 0fh ;Pinta el marco
+        
+        Delay ;Delay entre ordenamiento
+        
+        call FIN_VIDEO ;Finaliza modo video
+
+		pop si
+		pop di
 		
 		;print vector
 		;print saltolinea
@@ -341,6 +400,49 @@ LOCAL ciclo1, Inter, ciclo2, Inter2, condicion_if, fin
 		jmp Inter2
 
 	fin:
+		push di
+		push si
+		xor si,si
+		xor di,di
+
+		call INI_VIDEO ; Inicia Modo Video
+        
+        mov Fila, 1
+        mov Columna, 1
+        call Set_Cursor
+        print Ordenamiento_Burbuja ; Tipo de Ordenamiento
+
+        mov Fila, 1
+        mov Columna, 40
+        call Set_Cursor
+        print Cadena_Tiempo ; Tiempo que tarda
+        
+        mov Fila, 1
+        mov Columna, 65
+        call Set_Cursor
+        print Cadena_vel ; La velocidad 
+
+		mov Fila, 1
+        mov Columna, 76
+        call Set_Cursor
+		print tiempo
+
+        call Pintar_Barras
+
+        call Pintar_Vector
+
+        ;Pintar_Barra 10d, 90d, 40d, 170d, 01h
+
+        pintar_marco 21d, 190d, 10d, 630, 0fh ;Pinta el marco
+        
+        Delay_Num 2500 ;Delay entre ordenamiento
+        
+        call FIN_VIDEO ;Finaliza modo video
+
+		pop si
+		pop di
+
+
 		print vector
 		print saltolinea
 		;print i
@@ -404,12 +506,97 @@ LOCAL ciclo1, Inter, ciclo2, Inter2, condicion_if, fin
 		mov al, temp[0]
 		mov vector[di],al ;vector[j+1] = temp;
 		dec di
-		print vector
-		print saltolinea
-		Delay
+
+		push di
+		push si
+		xor si,si
+		xor di,di
+
+		call INI_VIDEO ; Inicia Modo Video
+        
+        mov Fila, 1
+        mov Columna, 1
+        call Set_Cursor
+        print Ordenamiento_Burbuja ; Tipo de Ordenamiento
+
+        mov Fila, 1
+        mov Columna, 40
+        call Set_Cursor
+        print Cadena_Tiempo ; Tiempo que tarda
+        
+        mov Fila, 1
+        mov Columna, 65
+        call Set_Cursor
+        print Cadena_vel ; La velocidad 
+
+		mov Fila, 1
+        mov Columna, 76
+        call Set_Cursor
+		print tiempo
+
+        call Pintar_Barras
+
+        call Pintar_Vector
+
+        ;Pintar_Barra 10d, 90d, 40d, 170d, 01h
+
+        pintar_marco 21d, 190d, 10d, 630, 0fh ;Pinta el marco
+        
+        Delay ;Delay entre ordenamiento
+        
+        call FIN_VIDEO ;Finaliza modo video
+
+		pop si
+		pop di
+
+		;print vector
+		;print saltolinea
+		;Delay
 		jmp Inter2
 
 	fin:
+		push di
+		push si
+		xor si,si
+		xor di,di
+
+		call INI_VIDEO ; Inicia Modo Video
+        
+        mov Fila, 1
+        mov Columna, 1
+        call Set_Cursor
+        print Ordenamiento_Burbuja ; Tipo de Ordenamiento
+
+        mov Fila, 1
+        mov Columna, 40
+        call Set_Cursor
+        print Cadena_Tiempo ; Tiempo que tarda
+        
+        mov Fila, 1
+        mov Columna, 65
+        call Set_Cursor
+        print Cadena_vel ; La velocidad 
+
+		mov Fila, 1
+        mov Columna, 76
+        call Set_Cursor
+		print tiempo
+		
+        call Pintar_Barras
+
+        call Pintar_Vector
+
+        ;Pintar_Barra 10d, 90d, 40d, 170d, 01h
+
+        pintar_marco 21d, 190d, 10d, 630, 0fh ;Pinta el marco
+        
+        Delay_Num 2500 ;Delay entre ordenamiento
+        
+        call FIN_VIDEO ;Finaliza modo video
+
+		pop si
+		pop di
+
 		print vector
 		print saltolinea
 		;print i
@@ -493,9 +680,51 @@ LOCAL Ciclo1, Inter1, Ciclo2, Inter2, condicion_if, condicion_while, InterW, fin
 		IncContador i
 		inc si
 
-		print vector
-		print saltolinea
-		Delay
+		push di
+		push si
+		xor si,si
+		xor di,di
+
+		call INI_VIDEO ; Inicia Modo Video
+        
+        mov Fila, 1
+        mov Columna, 1
+        call Set_Cursor
+        print Ordenamiento_Shell ; Tipo de Ordenamiento
+
+        mov Fila, 1
+        mov Columna, 40
+        call Set_Cursor
+        print Cadena_Tiempo ; Tiempo que tarda
+        
+        mov Fila, 1
+        mov Columna, 65
+        call Set_Cursor
+        print Cadena_vel ; La velocidad 
+
+		mov Fila, 1
+        mov Columna, 76
+        call Set_Cursor
+		print tiempo
+
+        call Pintar_Barras
+
+        call Pintar_Vector
+
+        ;Pintar_Barra 10d, 90d, 40d, 170d, 01h
+
+        pintar_marco 21d, 190d, 10d, 630, 0fh ;Pinta el marco
+        
+        Delay ;Delay entre ordenamiento
+        
+        call FIN_VIDEO ;Finaliza modo video
+
+		pop si
+		pop di
+
+		;print vector
+		;print saltolinea
+		;Delay
 
 		jmp Inter2
 
@@ -527,6 +756,48 @@ LOCAL Ciclo1, Inter1, Ciclo2, Inter2, condicion_if, condicion_while, InterW, fin
 		jmp ciclo1
 
 	fin:
+		push di
+		push si
+		xor si,si
+		xor di,di
+
+		call INI_VIDEO ; Inicia Modo Video
+        
+        mov Fila, 1
+        mov Columna, 1
+        call Set_Cursor
+        print Ordenamiento_Burbuja ; Tipo de Ordenamiento
+
+        mov Fila, 1
+        mov Columna, 40
+        call Set_Cursor
+        print Cadena_Tiempo ; Tiempo que tarda
+        
+        mov Fila, 1
+        mov Columna, 65
+        call Set_Cursor
+        print Cadena_vel ; La velocidad 
+
+		mov Fila, 1
+        mov Columna, 76
+        call Set_Cursor
+		print tiempo
+
+        call Pintar_Barras
+
+        call Pintar_Vector
+
+        ;Pintar_Barra 10d, 90d, 40d, 170d, 01h
+
+        pintar_marco 21d, 190d, 10d, 630, 0fh ;Pinta el marco
+        
+        Delay_Num 2500 ;Delay entre ordenamiento
+        
+        call FIN_VIDEO ;Finaliza modo video
+
+		pop si
+		pop di
+
 		print saltolinea
 		print vector 
 endm
@@ -605,10 +876,53 @@ LOCAL Ciclo1, Inter1, Ciclo2, Inter2, condicion_if, condicion_while, InterW, fin
 
 		IncContador i
 		inc si
+		
+		;=====================Inicia modo Video
+		push di
+		push si
+		xor si,si
+		xor di,di
 
-		print vector
-		print saltolinea
-		Delay
+		call INI_VIDEO ; Inicia Modo Video
+        
+        mov Fila, 1
+        mov Columna, 1
+        call Set_Cursor
+        print Ordenamiento_Shell ; Tipo de Ordenamiento
+
+        mov Fila, 1
+        mov Columna, 40
+        call Set_Cursor
+        print Cadena_Tiempo ; Tiempo que tarda
+        
+        mov Fila, 1
+        mov Columna, 65
+        call Set_Cursor
+        print Cadena_vel ; La velocidad 
+
+		mov Fila, 1
+        mov Columna, 76
+        call Set_Cursor
+		print tiempo
+
+        call Pintar_Barras
+
+        call Pintar_Vector
+
+        ;Pintar_Barra 10d, 90d, 40d, 170d, 01h
+
+        pintar_marco 21d, 190d, 10d, 630, 0fh ;Pinta el marco
+        
+        Delay ;Delay entre ordenamiento
+        
+        call FIN_VIDEO ;Finaliza modo video
+
+		pop si
+		pop di
+		;=====================termina modo Video
+		;print vector
+		;print saltolinea
+		;Delay
 
 		jmp Inter2
 
@@ -640,6 +954,50 @@ LOCAL Ciclo1, Inter1, Ciclo2, Inter2, condicion_if, condicion_while, InterW, fin
 		jmp ciclo1
 
 	fin:
+		;=====================Inicia modo Video
+		push di
+		push si
+		xor si,si
+		xor di,di
+
+		call INI_VIDEO ; Inicia Modo Video
+        
+        mov Fila, 1
+        mov Columna, 1
+        call Set_Cursor
+        print Ordenamiento_Burbuja ; Tipo de Ordenamiento
+
+        mov Fila, 1
+        mov Columna, 40
+        call Set_Cursor
+        print Cadena_Tiempo ; Tiempo que tarda
+        
+        mov Fila, 1
+        mov Columna, 65
+        call Set_Cursor
+        print Cadena_vel ; La velocidad 
+
+		mov Fila, 1
+        mov Columna, 76
+        call Set_Cursor
+		print tiempo
+
+        call Pintar_Barras
+
+        call Pintar_Vector
+
+        ;Pintar_Barra 10d, 90d, 40d, 170d, 01h
+
+        pintar_marco 21d, 190d, 10d, 630, 0fh ;Pinta el marco
+        
+        Delay_Num 2500 ;Delay entre ordenamiento
+        
+        call FIN_VIDEO ;Finaliza modo video
+
+		pop si
+		pop di
+		;=====================termina modo Video
+
 		print vector
 		print saltolinea
 endm
@@ -681,25 +1039,6 @@ LOCAL ciclo
 		inc si
 	loop ciclo
 endm
-
-;Encargado de pintar un pixel en (i, j) => 320 * i + j --> 320 decimal => 140 hexadecimal
-	pintar_pixel macro i, j, color
-		push ax
-		push bx
-		push di
-		xor ax, ax
-		xor bx, bx
-		xor di, di
-		mov ax, 320d
-		mov bx, i
-		mul bx
-		add ax, j
-		mov di, ax
-		mov [di], color
-		pop di
-		pop bx
-		pop ax
-	endm
 
 	pintar_marco macro izq, der, arr, aba, color
 		LOCAL ciclo1, ciclo2
@@ -756,11 +1095,8 @@ endm
  
 	endm
 
-	Pintar_Barra macro ancho, alto, inicio_i, inico_j, color
-	LOCAL Ciclo1, Ciclo2
-	endm
-
 	Delay_Num macro param   
+	LOCAL ret2, ret1, finRet
 		push ax
 		push bx
 		xor ax, ax

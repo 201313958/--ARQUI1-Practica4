@@ -46,9 +46,8 @@ SeCargoExito db 0ah,0dh, 'Se Cargo exitosamente...' , 0ah,0dh, '$'
 
 ;Vectores para hacer los Ordenamientos
 Vec_Original db 50 dup('$')
-Vec_Bubble db 50 dup('$')
+Vec_Actual db 50 dup('$')
 Vec_Quick db 50 dup('$')
-Vec_Shell db 50 dup('$')
 cadena_Ordenado db 0ah,0dh, 'Se ordeno correctamente', '$'
 tamanio db 2 dup('$')
 tamanio_1 db 2 dup('$')
@@ -92,6 +91,13 @@ Columna db 0
 Columna_Actual db 0
 Espacio_Vector db 2 dup('$')
 Num_vector db 2 dup('$')
+Espacio_Barra db 2 dup('$')
+Fin_Barra dw 2 dup('$')
+Alto_Barra db 2 dup('$')
+Alto_Acutal db 2 dup('$')
+Color_Barra db 0
+i_Barra db 2 dup('$')
+j_Barra db 2 dup('$')
 
 .code
 main proc far
@@ -179,15 +185,21 @@ main proc far
     
     ;---------- Ordenamiento BubbleSort Ascendente-----
     ASC_Bubblesort:
+        llenar_Vector Vec_Original, Vec_Actual
         print saltolinea
-        Bubblesort_Ascendente Vec_Bubble
+        print Vec_Original
+        print saltolinea
+        Bubblesort_Ascendente Vec_Actual
 
         jmp menu
     
     ;---------- Ordenamiento BubbleSort Desscendente---
     DES_Bubblesort:
+        llenar_Vector Vec_Original, Vec_Actual
         print saltolinea
-        Bubblesort_Descendente Vec_Bubble
+        print Vec_Original
+        print saltolinea
+        Bubblesort_Descendente Vec_Actual
         jmp menu
     ;---------- Ordenamiento QuickSort, Velocidad -----
     Quicksort:
@@ -277,12 +289,20 @@ main proc far
 
     ;---------- Ordenamiento ShellSort Ascendente ----
     ASC_Shellsort:
-        Shellsort_Ascendente Vec_Shell
+        llenar_Vector Vec_Original, Vec_Actual
+        print saltolinea
+        print Vec_Original
+        print saltolinea
+        Shellsort_Ascendente Vec_Actual
         jmp menu
 
     ;---------- Ordenamiento ShellSort Descendente ----    
     DES_Shellsort:
-        Shellsort_Descendente Vec_Shell
+        llenar_Vector Vec_Original, Vec_Actual
+        print saltolinea
+        print Vec_Original
+        print saltolinea
+        Shellsort_Descendente Vec_Actual
         jmp menu
 
     ;---------- Error para la carga de archivos -------
@@ -305,9 +325,7 @@ main proc far
 		print saltolinea
         limpiar bufferentrada1, SIZEOF bufferentrada1,24h
         limpiar Vec_Original, SIZEOF Vec_Original,24h
-        limpiar Vec_Bubble, SIZEOF Vec_Original,24h
-        limpiar Vec_Quick, SIZEOF Vec_Original,24h
-        limpiar Vec_Shell, SIZEOF Vec_Original,24h
+        limpiar Vec_Actual, SIZEOF Vec_Original,24h
 		obtenerRuta bufferentrada1
 		abrir bufferentrada1,handlerentrada1  ;le mandamos la ruta y el handler,que será la referencia al fichero 
 		limpiar bufferInformacion1, SIZEOF bufferInformacion1,24h  ;limpiamos la variable donde guardaremos los datos del archivo 
@@ -364,9 +382,6 @@ main proc far
         mov al, NumTemp[0] ;Obtenemos el primer numero numero en ascii de la cadena
         sub al,30h ;Le restamos 0 para obtener su numero digital
         mov Vec_Original[di], al ;Se agrega al vector original
-        mov Vec_Bubble[di],al ;Se agrega al vector para el bubble
-        mov Vec_Quick[di],al ;Se agrega al vector para el quick
-        mov Vec_Shell[di],al ;Se agrega al vector para el shell
         IncContador tamanio
         inc di
         inc si
@@ -388,9 +403,6 @@ main proc far
         mov bl,temp[0] ;movemos las decenas a bl
         add al,bl ;y sumamos las decenas con las unidades
         mov Vec_Original[di], al ;Se agrega al vector original
-        mov Vec_Bubble[di],al ;Se agrega al vector para el bubble
-        mov Vec_Quick[di],al ;Se agrega al vector para el quick
-        mov Vec_Shell[di],al ;Se agrega al vector para el shell
         IncContador tamanio
         inc di
         inc si
@@ -404,34 +416,6 @@ main proc far
         print SeCargoExito
         print saltolinea
         ;NumToAscii tamanio
-        
-        call INI_VIDEO ; Inicia Modo Video
-        
-        mov Fila, 1
-        mov Columna, 1
-        call Set_Cursor
-        print Ordenamiento_Burbuja ; Tipo de Ordenamiento
-
-        mov Fila, 1
-        mov Columna, 40
-        call Set_Cursor
-        print Cadena_Tiempo ; Tiempo que tarda
-        
-        mov Fila, 1
-        mov Columna, 65
-        call Set_Cursor
-        print Cadena_vel ; La velocidad 
-        
-        call Pintar_Vector_Burbuja
-
-        Pintar_Barra 10d, 90d, 40d, 170d, 01h
-
-        pintar_marco 21d, 190d, 10d, 630, 0fh ;Pinta el marco
-        
-        Delay_Num 2000 ;Delay entre ordenamiento
-        
-        call FIN_VIDEO ;Finaliza modo video
-
         jmp menu
     
     ;---------- Termina el programa ------------------------
@@ -439,9 +423,1125 @@ main proc far
 		close
 main endp
 
+Determinar_Color proc
+    mov al, Vec_Actual[si]
+    cmp al,21
+        jl Rojo
+    cmp al,41
+        jl Azul
+    cmp al,61
+        jl Amarillo
+    cmp al,81
+        jl Verde
+    jmp Blaco
 
-; =============================Pasar de decimas a Ascii el vector
-;Trasndormar cada numero a ascci y guardarlo en una var temp para imprimirlo
+    Rojo:
+        mov Color_Barra,04h
+        jmp fin
+    Azul:
+        mov Color_Barra,01h
+        jmp fin
+    Amarillo:
+        mov Color_Barra,0Eh
+        jmp fin
+    Verde:
+        mov Color_Barra,02h
+        jmp fin
+    Blaco:
+        mov Color_Barra,0Fh
+        jmp fin
+    fin: 
+        ret
+Determinar_Color endp
+
+
+Pintar_10Barra proc
+    Push si
+    push di
+    xor si,si 
+    xor di,di
+
+    mov temp[0],0
+    mov cx, 35d    ; Columna        
+    mov dx, 170d    ; fila
+    
+    Master:
+        mov al,Vec_Actual[si]
+        mov bl, 145
+        mul bl
+        mov bl, 100
+        div bl
+        mov Alto_Barra[0], al
+        mov Alto_Acutal[0], 0d
+
+        call Determinar_Color
+
+        Ciclo1:
+        mov dx, 170d
+        mov Alto_Acutal[0], 0d
+
+            Ciclo2:
+            mov al, Color_Barra
+            mov ah, 0ch 
+            int 10h
+            sub dx,1
+            IncContador Alto_Acutal
+            
+            xor ax,ax
+            mov al, Alto_Acutal[0]
+            cmp al,Alto_Barra[0]
+                jne Ciclo2
+
+            inc di
+            inc cx 
+            cmp di,35d
+                je Proximo
+            jmp Ciclo1
+
+    Proximo:
+        mov Espacio_Barra[0],0
+        xor di,di
+        mover:
+            IncContador Espacio_Barra
+            inc cx
+            mov al, Espacio_Barra[0]
+            cmp al,22d
+                jl mover 
+
+        inc si
+        IncContador temp
+        mov al,temp[0]
+        cmp al,tamanio[0]
+        	je fin
+        jmp Master
+
+    fin:
+        xor si,si 
+        xor di,di
+        pop di
+        pop si
+        ret 
+Pintar_10Barra endp
+
+Pintar_11Barra proc
+    Push si
+    push di
+    xor si,si 
+    xor di,di
+
+    mov temp[0],0
+    mov cx, 25d    ; Columna        
+    mov dx, 170d    ; fila
+    
+    Master:
+        mov al,Vec_Actual[si]
+        mov bl, 145
+        mul bl
+        mov bl, 100
+        div bl
+        mov Alto_Barra[0], al
+        mov Alto_Acutal[0], 0d
+
+        call Determinar_Color
+
+        Ciclo1:
+        mov dx, 170d
+        mov Alto_Acutal[0], 0d
+
+            Ciclo2:
+            mov al, Color_Barra
+            mov ah, 0ch 
+            int 10h
+            sub dx,1
+            IncContador Alto_Acutal
+            
+            xor ax,ax
+            mov al, Alto_Acutal[0]
+            cmp al,Alto_Barra[0]
+                jne Ciclo2
+
+            inc di
+            inc cx 
+            cmp di,35d
+                je Proximo
+            jmp Ciclo1
+
+    Proximo:
+        mov Espacio_Barra[0],0
+        xor di,di
+        mover:
+            IncContador Espacio_Barra
+            inc cx
+            mov al, Espacio_Barra[0]
+            cmp al,20d
+                jl mover 
+
+        inc si
+        IncContador temp
+        mov al,temp[0]
+        cmp al,tamanio[0]
+        	je fin
+        jmp Master
+
+    fin:
+        xor si,si 
+        xor di,di
+        pop di
+        pop si
+        ret 
+Pintar_11Barra endp
+
+Pintar_12Barra proc
+    Push si
+    push di
+    xor si,si 
+    xor di,di
+
+    mov temp[0],0
+    mov cx, 43d    ; Columna        
+    mov dx, 170d    ; fila
+    
+    Master:
+        mov al,Vec_Actual[si]
+        mov bl, 145
+        mul bl
+        mov bl, 100
+        div bl
+        mov Alto_Barra[0], al
+        mov Alto_Acutal[0], 0d
+
+        call Determinar_Color
+
+        Ciclo1:
+        mov dx, 170d
+        mov Alto_Acutal[0], 0d
+
+            Ciclo2:
+            mov al, Color_Barra
+            mov ah, 0ch 
+            int 10h
+            sub dx,1
+            IncContador Alto_Acutal
+            
+            xor ax,ax
+            mov al, Alto_Acutal[0]
+            cmp al,Alto_Barra[0]
+                jne Ciclo2
+
+            inc di
+            inc cx 
+            cmp di,28d
+                je Proximo
+            jmp Ciclo1
+
+    Proximo:
+        mov Espacio_Barra[0],0
+        xor di,di
+        mover:
+            IncContador Espacio_Barra
+            inc cx
+            mov al, Espacio_Barra[0]
+            cmp al,19d
+                jl mover 
+
+        inc si
+        IncContador temp
+        mov al,temp[0]
+        cmp al,tamanio[0]
+        	je fin
+        jmp Master
+
+    fin:
+        xor si,si 
+        xor di,di
+        pop di
+        pop si
+        ret 
+Pintar_12Barra endp
+
+Pintar_13Barra proc
+    Push si
+    push di
+    xor si,si 
+    xor di,di
+
+    mov temp[0],0
+    mov cx, 18d    ; Columna        
+    mov dx, 170d    ; fila
+    
+    Master:
+        mov al,Vec_Actual[si]
+        mov bl, 145
+        mul bl
+        mov bl, 100
+        div bl
+        mov Alto_Barra[0], al
+        mov Alto_Acutal[0], 0d
+
+        call Determinar_Color
+
+        Ciclo1:
+        mov dx, 170d
+        mov Alto_Acutal[0], 0d
+
+            Ciclo2:
+            mov al, Color_Barra
+            mov ah, 0ch 
+            int 10h
+            sub dx,1
+            IncContador Alto_Acutal
+            
+            xor ax,ax
+            mov al, Alto_Acutal[0]
+            cmp al,Alto_Barra[0]
+                jne Ciclo2
+
+            inc di
+            inc cx 
+            cmp di,29d
+                je Proximo
+            jmp Ciclo1
+
+    Proximo:
+        mov Espacio_Barra[0],0
+        xor di,di
+        mover:
+            IncContador Espacio_Barra
+            inc cx
+            mov al, Espacio_Barra[0]
+            cmp al,19d
+                jl mover 
+
+        inc si
+        IncContador temp
+        mov al,temp[0]
+        cmp al,tamanio[0]
+        	je fin
+        jmp Master
+
+    fin:
+        xor si,si 
+        xor di,di
+        pop di
+        pop si
+        ret 
+Pintar_13Barra endp
+
+Pintar_14Barra proc
+    Push si
+    push di
+    xor si,si 
+    xor di,di
+
+    mov temp[0],0
+    mov cx, 43d    ; Posicion inicial columna        
+    mov dx, 170d    ; fila
+    
+    Master:
+        mov al,Vec_Actual[si]
+        mov bl, 145
+        mul bl
+        mov bl, 100
+        div bl
+        mov Alto_Barra[0], al
+        mov Alto_Acutal[0], 0d
+
+        call Determinar_Color
+
+        Ciclo1:
+        mov dx, 170d
+        mov Alto_Acutal[0], 0d
+
+            Ciclo2:
+            mov al, Color_Barra
+            mov ah, 0ch 
+            int 10h
+            sub dx,1
+            IncContador Alto_Acutal
+            
+            xor ax,ax
+            mov al, Alto_Acutal[0]
+            cmp al,Alto_Barra[0]
+                jne Ciclo2
+
+            inc di
+            inc cx 
+            cmp di,25d ; Tamaño de las barras
+                je Proximo
+            jmp Ciclo1
+
+    Proximo:
+        mov Espacio_Barra[0],0
+        xor di,di
+        mover:
+            IncContador Espacio_Barra
+            inc cx
+            mov al, Espacio_Barra[0]
+            cmp al,15d ; Separacion entre barras
+                jl mover 
+
+        inc si
+        IncContador temp
+        mov al,temp[0]
+        cmp al,tamanio[0]
+        	je fin
+        jmp Master
+
+    fin:
+        xor si,si 
+        xor di,di
+        pop di
+        pop si
+        ret 
+Pintar_14Barra endp
+
+Pintar_15Barra proc
+    Push si
+    push di
+    xor si,si 
+    xor di,di
+
+    mov temp[0],0
+    mov cx, 30d    ; Posicion inicial columna        
+    mov dx, 170d    ; fila
+    
+    Master:
+        mov al,Vec_Actual[si]
+        mov bl, 145
+        mul bl
+        mov bl, 100
+        div bl
+        mov Alto_Barra[0], al
+        mov Alto_Acutal[0], 0d
+
+        call Determinar_Color
+
+        Ciclo1:
+        mov dx, 170d
+        mov Alto_Acutal[0], 0d
+
+            Ciclo2:
+            mov al, Color_Barra
+            mov ah, 0ch 
+            int 10h
+            sub dx,1
+            IncContador Alto_Acutal
+            
+            xor ax,ax
+            mov al, Alto_Acutal[0]
+            cmp al,Alto_Barra[0]
+                jne Ciclo2
+
+            inc di
+            inc cx 
+            cmp di,25d ; Tamaño de las barras
+                je Proximo
+            jmp Ciclo1
+
+    Proximo:
+        mov Espacio_Barra[0],0
+        xor di,di
+        mover:
+            IncContador Espacio_Barra
+            inc cx
+            mov al, Espacio_Barra[0]
+            cmp al,15d ; Separacion entre barras
+                jl mover 
+
+        inc si
+        IncContador temp
+        mov al,temp[0]
+        cmp al,tamanio[0]
+        	je fin
+        jmp Master
+
+    fin:
+        xor si,si 
+        xor di,di
+        pop di
+        pop si
+        ret 
+Pintar_15Barra endp
+
+Pintar_16Barra proc
+    Push si
+    push di
+    xor si,si 
+    xor di,di
+
+    mov temp[0],0
+    mov cx, 15d    ; Posicion inicial columna        
+    mov dx, 170d    ; fila
+    
+    Master:
+        mov al,Vec_Actual[si]
+        mov bl, 145
+        mul bl
+        mov bl, 100
+        div bl
+        mov Alto_Barra[0], al
+        mov Alto_Acutal[0], 0d
+
+        call Determinar_Color
+
+        Ciclo1:
+        mov dx, 170d
+        mov Alto_Acutal[0], 0d
+
+            Ciclo2:
+            mov al, Color_Barra
+            mov ah, 0ch 
+            int 10h
+            sub dx,1
+            IncContador Alto_Acutal
+            
+            xor ax,ax
+            mov al, Alto_Acutal[0]
+            cmp al,Alto_Barra[0]
+                jne Ciclo2
+
+            inc di
+            inc cx 
+            cmp di,28d ; Tamaño de las barras
+                je Proximo
+            jmp Ciclo1
+
+    Proximo:
+        mov Espacio_Barra[0],0
+        xor di,di
+        mover:
+            IncContador Espacio_Barra
+            inc cx
+            mov al, Espacio_Barra[0]
+            cmp al,11d ; Separacion entre barras
+                jl mover 
+
+        inc si
+        IncContador temp
+        mov al,temp[0]
+        cmp al,tamanio[0]
+        	je fin
+        jmp Master
+
+    fin:
+        xor si,si 
+        xor di,di
+        pop di
+        pop si
+        ret 
+Pintar_16Barra endp
+
+Pintar_17Barra proc
+    Push si
+    push di
+    xor si,si 
+    xor di,di
+
+    mov temp[0],0
+    mov cx, 57d    ; Posicion inicial columna        
+    mov dx, 170d    ; fila
+    
+    Master:
+        mov al,Vec_Actual[si]
+        mov bl, 145
+        mul bl
+        mov bl, 100
+        div bl
+        mov Alto_Barra[0], al
+        mov Alto_Acutal[0], 0d
+
+        call Determinar_Color
+
+        Ciclo1:
+        mov dx, 170d
+        mov Alto_Acutal[0], 0d
+
+            Ciclo2:
+            mov al, Color_Barra
+            mov ah, 0ch 
+            int 10h
+            sub dx,1
+            IncContador Alto_Acutal
+            
+            xor ax,ax
+            mov al, Alto_Acutal[0]
+            cmp al,Alto_Barra[0]
+                jne Ciclo2
+
+            inc di
+            inc cx 
+            cmp di,18d ; Tamaño de las barras
+                je Proximo
+            jmp Ciclo1
+
+    Proximo:
+        mov Espacio_Barra[0],0
+        xor di,di
+        mover:
+            IncContador Espacio_Barra
+            inc cx
+            mov al, Espacio_Barra[0]
+            cmp al,14d ; Separacion entre barras
+                jl mover 
+
+        inc si
+        IncContador temp
+        mov al,temp[0]
+        cmp al,tamanio[0]
+        	je fin
+        jmp Master
+
+    fin:
+        xor si,si 
+        xor di,di
+        pop di
+        pop si
+        ret 
+Pintar_17Barra endp
+
+Pintar_18Barra proc
+    Push si
+    push di
+    xor si,si 
+    xor di,di
+
+    mov temp[0],0
+    mov cx, 35d    ; Posicion inicial columna        
+    mov dx, 170d    ; fila
+    
+    Master:
+        mov al,Vec_Actual[si]
+        mov bl, 145
+        mul bl
+        mov bl, 100
+        div bl
+        mov Alto_Barra[0], al
+        mov Alto_Acutal[0], 0d
+
+        call Determinar_Color
+
+        Ciclo1:
+        mov dx, 170d
+        mov Alto_Acutal[0], 0d
+
+            Ciclo2:
+            mov al, Color_Barra
+            mov ah, 0ch 
+            int 10h
+            sub dx,1
+            IncContador Alto_Acutal
+            
+            xor ax,ax
+            mov al, Alto_Acutal[0]
+            cmp al,Alto_Barra[0]
+                jne Ciclo2
+
+            inc di
+            inc cx 
+            cmp di,18d ; Tamaño de las barras
+                je Proximo
+            jmp Ciclo1
+
+    Proximo:
+        mov Espacio_Barra[0],0
+        xor di,di
+        mover:
+            IncContador Espacio_Barra
+            inc cx
+            mov al, Espacio_Barra[0]
+            cmp al,14d ; Separacion entre barras
+                jl mover 
+
+        inc si
+        IncContador temp
+        mov al,temp[0]
+        cmp al,tamanio[0]
+        	je fin
+        jmp Master
+
+    fin:
+        xor si,si 
+        xor di,di
+        pop di
+        pop si
+        ret 
+Pintar_18Barra endp
+
+Pintar_19Barra proc
+    Push si
+    push di
+    xor si,si 
+    xor di,di
+
+    mov temp[0],0
+    mov cx, 24d    ; Posicion inicial columna        
+    mov dx, 170d    ; fila
+    
+    Master:
+        mov al,Vec_Actual[si]
+        mov bl, 145
+        mul bl
+        mov bl, 100
+        div bl
+        mov Alto_Barra[0], al
+        mov Alto_Acutal[0], 0d
+
+        call Determinar_Color
+
+        Ciclo1:
+        mov dx, 170d
+        mov Alto_Acutal[0], 0d
+
+            Ciclo2:
+            mov al, Color_Barra
+            mov ah, 0ch 
+            int 10h
+            sub dx,1
+            IncContador Alto_Acutal
+            
+            xor ax,ax
+            mov al, Alto_Acutal[0]
+            cmp al,Alto_Barra[0]
+                jne Ciclo2
+
+            inc di
+            inc cx 
+            cmp di,18d ; Tamaño de las barras
+                je Proximo
+            jmp Ciclo1
+
+    Proximo:
+        mov Espacio_Barra[0],0
+        xor di,di
+        mover:
+            IncContador Espacio_Barra
+            inc cx
+            mov al, Espacio_Barra[0]
+            cmp al,14d ; Separacion entre barras
+                jl mover 
+
+        inc si
+        IncContador temp
+        mov al,temp[0]
+        cmp al,tamanio[0]
+        	je fin
+        jmp Master
+
+    fin:
+        xor si,si 
+        xor di,di
+        pop di
+        pop si
+        ret 
+Pintar_19Barra endp
+
+Pintar_20Barra proc
+    Push si
+    push di
+    xor si,si 
+    xor di,di
+
+    mov temp[0],0
+    mov cx, 75d    ; Posicion inicial columna        
+    mov dx, 170d    ; fila
+    
+    Master:
+        mov al,Vec_Actual[si]
+        mov bl, 145
+        mul bl
+        mov bl, 100
+        div bl
+        mov Alto_Barra[0], al
+        mov Alto_Acutal[0], 0d
+
+        call Determinar_Color
+
+        Ciclo1:
+        mov dx, 170d
+        mov Alto_Acutal[0], 0d
+
+            Ciclo2:
+            mov al, Color_Barra
+            mov ah, 0ch 
+            int 10h
+            sub dx,1
+            IncContador Alto_Acutal
+            
+            xor ax,ax
+            mov al, Alto_Acutal[0]
+            cmp al,Alto_Barra[0]
+                jne Ciclo2
+
+            inc di
+            inc cx 
+            cmp di,14d ; Tamaño de las barras
+                je Proximo
+            jmp Ciclo1
+
+    Proximo:
+        mov Espacio_Barra[0],0
+        xor di,di
+        mover:
+            IncContador Espacio_Barra
+            inc cx
+            mov al, Espacio_Barra[0]
+            cmp al,10d ; Separacion entre barras
+                jl mover 
+
+        inc si
+        IncContador temp
+        mov al,temp[0]
+        cmp al,tamanio[0]
+        	je fin
+        jmp Master
+
+    fin:
+        xor si,si 
+        xor di,di
+        pop di
+        pop si
+        ret 
+Pintar_20Barra endp
+
+Pintar_21Barra proc
+    Push si
+    push di
+    xor si,si 
+    xor di,di
+
+    mov temp[0],0
+    mov cx, 56d    ; Posicion inicial columna        
+    mov dx, 170d    ; fila
+    
+    Master:
+        mov al,Vec_Actual[si]
+        mov bl, 145
+        mul bl
+        mov bl, 100
+        div bl
+        mov Alto_Barra[0], al
+        mov Alto_Acutal[0], 0d
+
+        call Determinar_Color
+
+        Ciclo1:
+        mov dx, 170d
+        mov Alto_Acutal[0], 0d
+
+            Ciclo2:
+            mov al, Color_Barra
+            mov ah, 0ch 
+            int 10h
+            sub dx,1
+            IncContador Alto_Acutal
+            
+            xor ax,ax
+            mov al, Alto_Acutal[0]
+            cmp al,Alto_Barra[0]
+                jne Ciclo2
+
+            inc di
+            inc cx 
+            cmp di,14d ; Tamaño de las barras
+                je Proximo
+            jmp Ciclo1
+
+    Proximo:
+        mov Espacio_Barra[0],0
+        xor di,di
+        mover:
+            IncContador Espacio_Barra
+            inc cx
+            mov al, Espacio_Barra[0]
+            cmp al,10d ; Separacion entre barras
+                jl mover 
+
+        inc si
+        IncContador temp
+        mov al,temp[0]
+        cmp al,tamanio[0]
+        	je fin
+        jmp Master
+
+    fin:
+        xor si,si 
+        xor di,di
+        pop di
+        pop si
+        ret 
+Pintar_21Barra endp
+
+Pintar_22Barra proc
+    Push si
+    push di
+    xor si,si 
+    xor di,di
+
+    mov temp[0],0
+    mov cx, 48d    ; Posicion inicial columna        
+    mov dx, 170d    ; fila
+    
+    Master:
+        mov al,Vec_Actual[si]
+        mov bl, 145
+        mul bl
+        mov bl, 100
+        div bl
+        mov Alto_Barra[0], al
+        mov Alto_Acutal[0], 0d
+
+        call Determinar_Color
+
+        Ciclo1:
+        mov dx, 170d
+        mov Alto_Acutal[0], 0d
+
+            Ciclo2:
+            mov al, Color_Barra
+            mov ah, 0ch 
+            int 10h
+            sub dx,1
+            IncContador Alto_Acutal
+            
+            xor ax,ax
+            mov al, Alto_Acutal[0]
+            cmp al,Alto_Barra[0]
+                jne Ciclo2
+
+            inc di
+            inc cx 
+            cmp di,14d ; Tamaño de las barras
+                je Proximo
+            jmp Ciclo1
+
+    Proximo:
+        mov Espacio_Barra[0],0
+        xor di,di
+        mover:
+            IncContador Espacio_Barra
+            inc cx
+            mov al, Espacio_Barra[0]
+            cmp al,10d ; Separacion entre barras
+                jl mover 
+
+        inc si
+        IncContador temp
+        mov al,temp[0]
+        cmp al,tamanio[0]
+        	je fin
+        jmp Master
+
+    fin:
+        xor si,si 
+        xor di,di
+        pop di
+        pop si
+        ret 
+Pintar_22Barra endp
+
+Pintar_23Barra proc
+    Push si
+    push di
+    xor si,si 
+    xor di,di
+
+    mov temp[0],0
+    mov cx, 38d    ; Posicion inicial columna        
+    mov dx, 170d    ; fila
+    
+    Master:
+        mov al,Vec_Actual[si]
+        mov bl, 145
+        mul bl
+        mov bl, 100
+        div bl
+        mov Alto_Barra[0], al
+        mov Alto_Acutal[0], 0d
+
+        call Determinar_Color
+
+        Ciclo1:
+        mov dx, 170d
+        mov Alto_Acutal[0], 0d
+
+            Ciclo2:
+            mov al, Color_Barra
+            mov ah, 0ch 
+            int 10h
+            sub dx,1
+            IncContador Alto_Acutal
+            
+            xor ax,ax
+            mov al, Alto_Acutal[0]
+            cmp al,Alto_Barra[0]
+                jne Ciclo2
+
+            inc di
+            inc cx 
+            cmp di,14d ; Tamaño de las barras
+                je Proximo
+            jmp Ciclo1
+
+    Proximo:
+        mov Espacio_Barra[0],0
+        xor di,di
+        mover:
+            IncContador Espacio_Barra
+            inc cx
+            mov al, Espacio_Barra[0]
+            cmp al,10d ; Separacion entre barras
+                jl mover 
+
+        inc si
+        IncContador temp
+        mov al,temp[0]
+        cmp al,tamanio[0]
+        	je fin
+        jmp Master
+
+    fin:
+        xor si,si 
+        xor di,di
+        pop di
+        pop si
+        ret 
+Pintar_23Barra endp
+
+Pintar_24Barra proc
+    Push si
+    push di
+    xor si,si 
+    xor di,di
+
+    mov temp[0],0
+    mov cx, 32d    ; Posicion inicial columna        
+    mov dx, 170d    ; fila
+    
+    Master:
+        mov al,Vec_Actual[si]
+        mov bl, 145
+        mul bl
+        mov bl, 100
+        div bl
+        mov Alto_Barra[0], al
+        mov Alto_Acutal[0], 0d
+
+        call Determinar_Color
+
+        Ciclo1:
+        mov dx, 170d
+        mov Alto_Acutal[0], 0d
+
+            Ciclo2:
+            mov al, Color_Barra
+            mov ah, 0ch 
+            int 10h
+            sub dx,1
+            IncContador Alto_Acutal
+            
+            xor ax,ax
+            mov al, Alto_Acutal[0]
+            cmp al,Alto_Barra[0]
+                jne Ciclo2
+
+            inc di
+            inc cx 
+            cmp di,14d ; Tamaño de las barras
+                je Proximo
+            jmp Ciclo1
+
+    Proximo:
+        mov Espacio_Barra[0],0
+        xor di,di
+        mover:
+            IncContador Espacio_Barra
+            inc cx
+            mov al, Espacio_Barra[0]
+            cmp al,10d ; Separacion entre barras
+                jl mover 
+
+        inc si
+        IncContador temp
+        mov al,temp[0]
+        cmp al,tamanio[0]
+        	je fin
+        jmp Master
+
+    fin:
+        xor si,si 
+        xor di,di
+        pop di
+        pop si
+        ret 
+Pintar_24Barra endp
+
+Pintar_25Barra proc
+    Push si
+    push di
+    xor si,si 
+    xor di,di
+
+    mov temp[0],0
+    mov cx, 25d    ; Posicion inicial columna        
+    mov dx, 170d    ; fila
+    
+    Master:
+        mov al,Vec_Actual[si]
+        mov bl, 145
+        mul bl
+        mov bl, 100
+        div bl
+        mov Alto_Barra[0], al
+        mov Alto_Acutal[0], 0d
+
+        call Determinar_Color
+
+        Ciclo1:
+        mov dx, 170d
+        mov Alto_Acutal[0], 0d
+
+            Ciclo2:
+            mov al, Color_Barra
+            mov ah, 0ch 
+            int 10h
+            sub dx,1
+            IncContador Alto_Acutal
+            
+            xor ax,ax
+            mov al, Alto_Acutal[0]
+            cmp al,Alto_Barra[0]
+                jne Ciclo2
+
+            inc di
+            inc cx 
+            cmp di,14d ; Tamaño de las barras
+                je Proximo
+            jmp Ciclo1
+
+    Proximo:
+        mov Espacio_Barra[0],0
+        xor di,di
+        mover:
+            IncContador Espacio_Barra
+            inc cx
+            mov al, Espacio_Barra[0]
+            cmp al,10d ; Separacion entre barras
+                jl mover 
+
+        inc si
+        IncContador temp
+        mov al,temp[0]
+        cmp al,tamanio[0]
+        	je fin
+        jmp Master
+
+    fin:
+        xor si,si 
+        xor di,di
+        pop di
+        pop si
+        ret 
+Pintar_25Barra endp
 
 ;-------------- Determina el espacio entre numeros ---------
 Determinar_espacio_Num proc
@@ -612,8 +1712,111 @@ Determinar_espacio_Num proc
         ret 
 Determinar_espacio_Num endp
 
+Pintar_Barras proc
+    xor ax,ax
+    mov al, tamanio[0]
+    cmp al,10
+        je Espacio10
+    cmp al,11
+        je Espacio11
+    cmp al,12
+        je Espacio12
+    cmp al,13
+        je Espacio13
+    cmp al,14
+        je Espacio14
+    cmp al,15
+        je Espacio15
+    cmp al,16
+        je Espacio16
+    cmp al,17
+        je Espacio17
+    cmp al,18
+        je Espacio18
+    cmp al,19
+        je Espacio19
+    cmp al,20
+        je Espacio20
+    cmp al,21
+        je Espacio21
+    cmp al,22
+        je Espacio22
+    cmp al,23
+        je Espacio23
+    cmp al,24
+        je Espacio24
+    cmp al,25
+        je Espacio25
+
+    Espacio10:
+        call Pintar_10Barra
+        jmp fin
+    Espacio11:
+        call Pintar_11Barra
+        jmp fin
+    
+    Espacio12:
+        call Pintar_12Barra
+        jmp fin
+
+    Espacio13:
+        call Pintar_13Barra
+        jmp fin
+
+    Espacio14:
+        call Pintar_14Barra
+        jmp fin
+    
+    Espacio15:
+        call Pintar_15Barra
+        jmp fin
+    
+    Espacio16:
+        call Pintar_16Barra
+        jmp fin
+    
+    Espacio17:
+        call Pintar_17Barra
+        jmp fin
+
+    Espacio18:
+        call Pintar_18Barra
+        jmp fin
+
+    Espacio19:
+        call Pintar_19Barra
+        jmp fin
+
+    Espacio20:
+        call Pintar_20Barra
+        jmp fin
+        
+    Espacio21:
+        call Pintar_21Barra
+        jmp fin
+
+    Espacio22:
+        call Pintar_22Barra
+        jmp fin
+
+    Espacio23:
+        call Pintar_23Barra
+        jmp fin
+
+    Espacio24:
+        call Pintar_24Barra
+        jmp fin
+
+    Espacio25:
+        call Pintar_25Barra
+        jmp fin
+    
+    fin:
+        ret 
+Pintar_Barras endp
+
 ;-------------- Pintar Vector Burbuja ----------------------
-Pintar_Vector_Burbuja proc
+Pintar_Vector proc
     xor ax,ax
     xor bx,bx
     xor si,si
@@ -630,39 +1833,14 @@ Pintar_Vector_Burbuja proc
         mov Columna,al
         call Set_Cursor
           
-        mov al, Vec_Bubble[si]
+        mov al, Vec_Actual[si]
         mov Num_vector[0],al
+
         NumToAscii Num_vector
         inc si
     loop Ciclo
     ret
-Pintar_Vector_Burbuja endp
-
-;-------------- Pintar Vector Shell ----------------------
-Pintar_Vector_Shell proc
-    xor ax,ax
-    xor bx,bx
-    xor si,si
-    xor cx,cx
-
-    call Determinar_espacio_Num
-    mov cl,tamanio[0]
-    Ciclo:
-        mov Fila, 22
-        mov al,Columna_Actual
-        mov bl,Espacio_Vector[0]
-        add al,bl
-        mov Columna_Actual,al
-        mov Columna,al
-        call Set_Cursor
-          
-        mov al, Vec_Shell[si]
-        mov Num_vector[0],al
-        NumToAscii Num_vector
-        inc si
-    loop Ciclo
-    ret
-Pintar_Vector_Shell endp
+Pintar_Vector endp
 
 ;-------------- Inicia modo Video --------------------------
 INI_VIDEO proc
