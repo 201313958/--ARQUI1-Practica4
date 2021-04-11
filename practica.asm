@@ -44,9 +44,81 @@ NumTemp db 2 dup('$')
 temp db 2 dup('$')
 SeCargoExito db 0ah,0dh, 'Se Cargo exitosamente...' , 0ah,0dh, '$'
 
+;Reporte
+bufferentrada db 'Reporte.xml'
+handlerentrada dw ?
+bufferInformacion db 20000 dup(' ')
+cr          equ   0dh
+lf          equ   0ah
+dolar       equ   '$'
+Parte_Quemada db "<ARQUI>",cr,lf
+            db "    <Encabezado>",cr,lf
+            db "        <UNIVERSIDAD>Universidad de San Carlos de Guatemala</UNIVERSIDAD>",cr,lf
+            db "        <FACULTAD>Facultad de Ingenieria</FACULTAD>",cr,lf
+            db "        <ESCUELA>Ciencias y Sistemas</ESCUELA>",cr,lf
+            db "        <CURSO>",cr,lf
+            db "            <Nombre>Arquitectura de computadores y ensambladores 1</Nombre>",cr,lf
+            db "            <Seccion>Seccion B</Seccion>",cr,lf
+            db "        </CURSO>",cr,lf
+            db "        <CICLO>Primer Semestre 2021</CICLO>",cr,lf
+            db "        <FECHA>",cr,lf
+            db "            <DIA>12</DIA>",cr,lf
+            db "            <MES>04</MES>",cr,lf
+            db "            <AÑO>2021</AÑO>",cr,lf
+            db "        </FECHA>",cr,lf
+            db "        <HORA>",cr,lf,dolar 
+
+Parte_Quemada2 db "        </Hora>", cr,lf
+            db "        <Alumno>", cr,lf
+            db "            <Nombre>Jose Pablo Valiente Montes</Nombre>", cr,lf
+            db "            <Carnet>301313958</Carnet>", cr,lf
+            db "        </Alumno>", cr,lf
+            db "    </Encabezado>", cr,lf
+            db "    <Resultados>", cr,lf, dolar
+
+Parte_Quemada3 db "    </Resultados>", cr,lf
+            db "</Arqui>", cr,lf, dolar
+
+Contador_Vectores db 2 dup('$')
+Reporte_Numero db 3 dup('$')
+Coma db ", ", dolar
+Reporte_hora db 3 dup('$')
+Reporte_minutos db 3 dup('$')
+Reporte_seg db 3 dup('$')
+eti_hora db "           <Hora>", dolar
+eti_hora2 db "</Hora>", cr,lf, dolar
+eti_minutos db "           <Minutos>", dolar
+eti_minutos2 db "</Minutos>", cr,lf, dolar
+eti_segundos db "           <Segundos>", dolar
+eti_segundos2 db "</Segundos>", cr,lf, dolar
+eti_tipo db "       <Tipo>", dolar
+eti_tipo2 db "</Tipo>", cr,lf, dolar
+eti_lst_entrada db "       <Lista_entrada>", dolar
+eti_lst_entrada2 db "</Lista_entrada>", cr,lf, dolar
+eti_lst_orden db "       <Lista_ordenada>", dolar
+eti_lst_orden2 db "</Lista_ordenada>", cr,lf, dolar
+eti_bubble db "       <Ordenamiento_BubbleSort>", cr,lf, dolar
+eti_bubble2 db "       </Ordenamiento_BubbleSort>", cr,lf, dolar
+eti_shell db "       <Ordenamiento_ShellSort>", cr,lf, dolar
+eti_shell2 db "       </Ordenamiento_ShellSort>", cr,lf, dolar
+eti_quick db "       <Ordenamiento_QuickSort>", cr,lf, dolar
+eti_quick2 db "       </Ordenamiento_QuickSort>", cr,lf, dolar
+eti_vel db "           <Velocidad>", dolar
+eti_vel2 db "</Velocidad>", cr,lf, dolar
+eti_tiempo db  "           <tiempo>", cr,lf, dolar
+eti_tiempo2 db "           </tiempo>", cr,lf, dolar
+eti_min db  "               <minutos>", dolar
+eti_min2 db "</minutos>", cr,lf, dolar
+eti_seg db  "               <segundos>", dolar
+eti_seg2 db "</segundos>", cr,lf, dolar
+eti_asc db "Ascendente", dolar
+eti_desc db "Descendente", dolar
+
+
 ;Vectores para hacer los Ordenamientos
 Vec_Original db 50 dup('$')
 Vec_Actual db 50 dup('$')
+Vec_Ascii db 70 dup('$')
 Vec_Quick db 50 dup('$')
 cadena_Ordenado db 0ah,0dh, 'Se ordeno correctamente', '$'
 tamanio db 2 dup('$')
@@ -76,8 +148,11 @@ matrix_to db 2 dup('$')
 A db 2 dup('$')
 B db 2 dup('$')
 
-;Delay
-tiempo db 2 dup('$')
+;Tiempo
+tiempo db 3 dup('$')
+Crono_Segundos db 3 dup('$')
+Crono_Minutos db 3 dup('$')
+Tiempo_Total db 7 dup('$')
 
 ;Modo Video 
 Ordenamiento_Burbuja db 'Ordenamiento: BubbleSort', '$'
@@ -85,6 +160,7 @@ Ordenamiento_Shell db   'Ordenamiento: ShellSort', '$'
 Ordenamiento_Quick db   'Ordenamiento: QuickSort', '$'
 Cadena_vel db 'Velocidad: ', '$'
 Cadena_Tiempo db        'Tiempo: ', '$'
+Cadena_DosPuntos db        ':', '$'
 Fila db 0
 Fila_Actual db 0
 Columna db 0
@@ -104,12 +180,23 @@ main proc far
 
     mov ax,@data
     mov ds,ax
-
-    
-    ;jmp salir
-
     ;---------- Se Imprime el Encabezado --------------
 	encabezado:
+        limpiar bufferInformacion, SIZEOF bufferInformacion,32d
+        xor si,si
+        Concatenar_Encabezado_HTML bufferInformacion, Parte_Quemada 
+        call Hora_Reporte
+        Concatenar_Encabezado_HTML bufferInformacion, eti_hora
+        Concatenar_Encabezado_HTML bufferInformacion, Reporte_hora
+        Concatenar_Encabezado_HTML bufferInformacion, eti_hora2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_minutos
+        Concatenar_Encabezado_HTML bufferInformacion, Reporte_minutos
+        Concatenar_Encabezado_HTML bufferInformacion, eti_minutos2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_segundos
+        Concatenar_Encabezado_HTML bufferInformacion, Reporte_seg
+        Concatenar_Encabezado_HTML bufferInformacion, eti_segundos2
+        Concatenar_Encabezado_HTML bufferInformacion, Parte_Quemada2
+        push si
         print encabezado1
 		print encabezado2
 		print encabezado3
@@ -136,10 +223,22 @@ main proc far
 		cmp al,50 ;mnemonio 32h = 2 en hexadecimal, ascii 50
 			je menu_ordenar
 		cmp al,51 ;mnemonio 33h = 3 en hexadecimal, ascii 51
-			;je factorial
+			je Crear_Reporte
 		cmp al,52 ;mnemonio 34h = 4 en hexadecimal, ascii 52
 			je salir
 		jmp menu
+    
+    ;---------- Crea el Reporte --------------------
+    Crear_Reporte:
+		pop si 
+	    Concatenar_Encabezado_HTML bufferInformacion, Parte_Quemada3
+		push si
+
+		crear bufferentrada, handlerentrada
+		escribir  handlerentrada, bufferInformacion, SIZEOF bufferInformacion
+		cerrar handlerentrada
+        jmp menu
+
     ;---------- Se Imprime el menu de ordenamientos ---
     menu_ordenar:
         print saltolinea
@@ -185,21 +284,193 @@ main proc far
     
     ;---------- Ordenamiento BubbleSort Ascendente-----
     ASC_Bubblesort:
+        mov Crono_Segundos[0],0d
+        mov Crono_Minutos[0],0d
         llenar_Vector Vec_Original, Vec_Actual
         print saltolinea
         print Vec_Original
         print saltolinea
         Bubblesort_Ascendente Vec_Actual
 
+        ;--Reporte
+        pop si
+        Concatenar_Encabezado_HTML bufferInformacion, eti_tipo
+        Concatenar_Encabezado_HTML bufferInformacion, eti_asc
+        Concatenar_Encabezado_HTML bufferInformacion, eti_tipo2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_lst_entrada
+
+        xor di,di
+        xor ax,ax
+        xor cx,cx
+
+        mov cl,tamanio
+        PrimerVec:
+            mov al,Vec_Original[di]
+            mov Reporte_Numero[0],al
+            Num_Ascii Reporte_Numero
+
+            mov al,Reporte_Numero[0]
+            mov bufferInformacion[si],al
+            
+            inc si
+
+            mov al,Reporte_Numero[1]
+            mov bufferInformacion[si],al
+            inc si   
+            mov bufferInformacion[si],44
+            inc si
+            mov bufferInformacion[si],32
+            inc si
+            mov Reporte_Numero[0],36
+            mov Reporte_Numero[1],36
+            mov Reporte_Numero[2],36
+            inc di
+        loop PrimerVec
+
+        Concatenar_Encabezado_HTML bufferInformacion, eti_lst_entrada2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_lst_orden
+
+        xor di,di
+        xor ax,ax
+        xor cx,cx
+
+        mov cl,tamanio
+        SegundoVec:
+            mov al,Vec_Actual[di]
+            mov Reporte_Numero[0],al
+            Num_Ascii Reporte_Numero
+
+            mov al,Reporte_Numero[0]
+            mov bufferInformacion[si],al
+            
+            inc si
+
+            mov al,Reporte_Numero[1]
+            mov bufferInformacion[si],al
+            inc si   
+            mov bufferInformacion[si],44
+            inc si
+            mov bufferInformacion[si],32
+            inc si
+            mov Reporte_Numero[0],36
+            mov Reporte_Numero[1],36
+            mov Reporte_Numero[2],36
+            inc di
+        loop SegundoVec
+
+        Concatenar_Encabezado_HTML bufferInformacion, eti_lst_orden2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_bubble
+        Concatenar_Encabezado_HTML bufferInformacion, eti_vel
+        Concatenar_Encabezado_HTML bufferInformacion, tiempo
+        Concatenar_Encabezado_HTML bufferInformacion, eti_vel2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_tiempo
+        Concatenar_Encabezado_HTML bufferInformacion, eti_min
+        Num_Ascii Crono_Minutos
+        Concatenar_Encabezado_HTML bufferInformacion, Crono_Minutos
+        Concatenar_Encabezado_HTML bufferInformacion, eti_min2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_seg
+        Num_Ascii Crono_Segundos
+        Concatenar_Encabezado_HTML bufferInformacion, Crono_Segundos
+        Concatenar_Encabezado_HTML bufferInformacion, eti_seg2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_tiempo2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_bubble2
+        push si
         jmp menu
     
     ;---------- Ordenamiento BubbleSort Desscendente---
     DES_Bubblesort:
+        mov Crono_Segundos[0],0d
+        mov Crono_Minutos[0],0d
         llenar_Vector Vec_Original, Vec_Actual
         print saltolinea
         print Vec_Original
         print saltolinea
         Bubblesort_Descendente Vec_Actual
+
+        ;--Reporte
+        pop si
+        Concatenar_Encabezado_HTML bufferInformacion, eti_tipo
+        Concatenar_Encabezado_HTML bufferInformacion, eti_desc
+        Concatenar_Encabezado_HTML bufferInformacion, eti_tipo2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_lst_entrada
+
+        xor di,di
+        xor ax,ax
+        xor cx,cx
+
+        mov cl,tamanio
+        PrimerVecDB:
+            mov al,Vec_Original[di]
+            mov Reporte_Numero[0],al
+            Num_Ascii Reporte_Numero
+
+            mov al,Reporte_Numero[0]
+            mov bufferInformacion[si],al
+            
+            inc si
+
+            mov al,Reporte_Numero[1]
+            mov bufferInformacion[si],al
+            inc si   
+            mov bufferInformacion[si],44
+            inc si
+            mov bufferInformacion[si],32
+            inc si
+            mov Reporte_Numero[0],36
+            mov Reporte_Numero[1],36
+            mov Reporte_Numero[2],36
+            inc di
+        loop PrimerVecDB
+
+        Concatenar_Encabezado_HTML bufferInformacion, eti_lst_entrada2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_lst_orden
+
+        xor di,di
+        xor ax,ax
+        xor cx,cx
+
+        mov cl,tamanio
+        SegundoVecDB:
+            mov al,Vec_Actual[di]
+            mov Reporte_Numero[0],al
+            Num_Ascii Reporte_Numero
+
+            mov al,Reporte_Numero[0]
+            mov bufferInformacion[si],al
+            
+            inc si
+
+            mov al,Reporte_Numero[1]
+            mov bufferInformacion[si],al
+            inc si   
+            mov bufferInformacion[si],44
+            inc si
+            mov bufferInformacion[si],32
+            inc si
+            mov Reporte_Numero[0],36
+            mov Reporte_Numero[1],36
+            mov Reporte_Numero[2],36
+            inc di
+        loop SegundoVecDB
+
+        Concatenar_Encabezado_HTML bufferInformacion, eti_lst_orden2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_bubble
+        Concatenar_Encabezado_HTML bufferInformacion, eti_vel
+        Concatenar_Encabezado_HTML bufferInformacion, tiempo
+        Concatenar_Encabezado_HTML bufferInformacion, eti_vel2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_tiempo
+        Concatenar_Encabezado_HTML bufferInformacion, eti_min
+        Num_Ascii Crono_Minutos
+        Concatenar_Encabezado_HTML bufferInformacion, Crono_Minutos
+        Concatenar_Encabezado_HTML bufferInformacion, eti_min2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_seg
+        Num_Ascii Crono_Segundos
+        Concatenar_Encabezado_HTML bufferInformacion, Crono_Segundos
+        Concatenar_Encabezado_HTML bufferInformacion, eti_seg2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_tiempo2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_bubble2
+        push si
+
         jmp menu
     ;---------- Ordenamiento QuickSort, Velocidad -----
     Quicksort:
@@ -289,20 +560,194 @@ main proc far
 
     ;---------- Ordenamiento ShellSort Ascendente ----
     ASC_Shellsort:
+        mov Crono_Segundos[0],0d
+        mov Crono_Minutos[0],0d
         llenar_Vector Vec_Original, Vec_Actual
         print saltolinea
         print Vec_Original
         print saltolinea
         Shellsort_Ascendente Vec_Actual
+
+        ;--Reporte
+        pop si
+        Concatenar_Encabezado_HTML bufferInformacion, eti_tipo
+        Concatenar_Encabezado_HTML bufferInformacion, eti_asc
+        Concatenar_Encabezado_HTML bufferInformacion, eti_tipo2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_lst_entrada
+
+        xor di,di
+        xor ax,ax
+        xor cx,cx
+
+        mov cl,tamanio
+        PrimerVecAS:
+            mov al,Vec_Original[di]
+            mov Reporte_Numero[0],al
+            Num_Ascii Reporte_Numero
+
+            mov al,Reporte_Numero[0]
+            mov bufferInformacion[si],al
+            
+            inc si
+
+            mov al,Reporte_Numero[1]
+            mov bufferInformacion[si],al
+            inc si   
+            mov bufferInformacion[si],44
+            inc si
+            mov bufferInformacion[si],32
+            inc si
+            mov Reporte_Numero[0],36
+            mov Reporte_Numero[1],36
+            mov Reporte_Numero[2],36
+            inc di
+        loop PrimerVecAS
+
+        Concatenar_Encabezado_HTML bufferInformacion, eti_lst_entrada2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_lst_orden
+
+        xor di,di
+        xor ax,ax
+        xor cx,cx
+
+        mov cl,tamanio
+        SegundoVecAS:
+            mov al,Vec_Actual[di]
+            mov Reporte_Numero[0],al
+            Num_Ascii Reporte_Numero
+
+            mov al,Reporte_Numero[0]
+            mov bufferInformacion[si],al
+            
+            inc si
+
+            mov al,Reporte_Numero[1]
+            mov bufferInformacion[si],al
+            inc si   
+            mov bufferInformacion[si],44
+            inc si
+            mov bufferInformacion[si],32
+            inc si
+            mov Reporte_Numero[0],36
+            mov Reporte_Numero[1],36
+            mov Reporte_Numero[2],36
+            inc di
+        loop SegundoVecAS
+
+        Concatenar_Encabezado_HTML bufferInformacion, eti_lst_orden2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_shell
+        Concatenar_Encabezado_HTML bufferInformacion, eti_vel
+        Concatenar_Encabezado_HTML bufferInformacion, tiempo
+        Concatenar_Encabezado_HTML bufferInformacion, eti_vel2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_tiempo
+        Concatenar_Encabezado_HTML bufferInformacion, eti_min
+        Num_Ascii Crono_Minutos
+        Concatenar_Encabezado_HTML bufferInformacion, Crono_Minutos
+        Concatenar_Encabezado_HTML bufferInformacion, eti_min2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_seg
+        Num_Ascii Crono_Segundos
+        Concatenar_Encabezado_HTML bufferInformacion, Crono_Segundos
+        Concatenar_Encabezado_HTML bufferInformacion, eti_seg2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_tiempo2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_shell2
+        push si
+
         jmp menu
 
     ;---------- Ordenamiento ShellSort Descendente ----    
     DES_Shellsort:
+        mov Crono_Segundos[0],0d
+        mov Crono_Minutos[0],0d
         llenar_Vector Vec_Original, Vec_Actual
         print saltolinea
         print Vec_Original
         print saltolinea
         Shellsort_Descendente Vec_Actual
+        
+        ;--Reporte
+        pop si
+        Concatenar_Encabezado_HTML bufferInformacion, eti_tipo
+        Concatenar_Encabezado_HTML bufferInformacion, eti_desc
+        Concatenar_Encabezado_HTML bufferInformacion, eti_tipo2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_lst_entrada
+
+        xor di,di
+        xor ax,ax
+        xor cx,cx
+
+        mov cl,tamanio
+        PrimerVecDS:
+            mov al,Vec_Original[di]
+            mov Reporte_Numero[0],al
+            Num_Ascii Reporte_Numero
+
+            mov al,Reporte_Numero[0]
+            mov bufferInformacion[si],al
+            
+            inc si
+
+            mov al,Reporte_Numero[1]
+            mov bufferInformacion[si],al
+            inc si   
+            mov bufferInformacion[si],44
+            inc si
+            mov bufferInformacion[si],32
+            inc si
+            mov Reporte_Numero[0],36
+            mov Reporte_Numero[1],36
+            mov Reporte_Numero[2],36
+            inc di
+        loop PrimerVecDS
+
+        Concatenar_Encabezado_HTML bufferInformacion, eti_lst_entrada2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_lst_orden
+
+        xor di,di
+        xor ax,ax
+        xor cx,cx
+
+        mov cl,tamanio
+        SegundoVecDS:
+            mov al,Vec_Actual[di]
+            mov Reporte_Numero[0],al
+            Num_Ascii Reporte_Numero
+
+            mov al,Reporte_Numero[0]
+            mov bufferInformacion[si],al
+            
+            inc si
+
+            mov al,Reporte_Numero[1]
+            mov bufferInformacion[si],al
+            inc si   
+            mov bufferInformacion[si],44
+            inc si
+            mov bufferInformacion[si],32
+            inc si
+            mov Reporte_Numero[0],36
+            mov Reporte_Numero[1],36
+            mov Reporte_Numero[2],36
+            inc di
+        loop SegundoVecDS
+
+        Concatenar_Encabezado_HTML bufferInformacion, eti_lst_orden2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_shell
+        Concatenar_Encabezado_HTML bufferInformacion, eti_vel
+        Concatenar_Encabezado_HTML bufferInformacion, tiempo
+        Concatenar_Encabezado_HTML bufferInformacion, eti_vel2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_tiempo
+        Concatenar_Encabezado_HTML bufferInformacion, eti_min
+        Num_Ascii Crono_Minutos
+        Concatenar_Encabezado_HTML bufferInformacion, Crono_Minutos
+        Concatenar_Encabezado_HTML bufferInformacion, eti_min2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_seg
+        Num_Ascii Crono_Segundos
+        Concatenar_Encabezado_HTML bufferInformacion, Crono_Segundos
+        Concatenar_Encabezado_HTML bufferInformacion, eti_seg2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_tiempo2
+        Concatenar_Encabezado_HTML bufferInformacion, eti_shell2
+        push si
+
         jmp menu
 
     ;---------- Error para la carga de archivos -------
@@ -453,7 +898,6 @@ Determinar_Color proc
     fin: 
         ret
 Determinar_Color endp
-
 
 Pintar_10Barra proc
     Push si
@@ -1977,4 +2421,87 @@ Quicksort_Ascendente proc
     fin:
         ret
 Quicksort_Ascendente endp
+
+Cronometro proc
+    IncContador Crono_Segundos
+    mov al,Crono_Segundos[0]
+    cmp al,60
+        je MasMinuto
+    jmp fin
+
+    MasMinuto:
+        mov Crono_Segundos[0],0
+        IncContador Crono_Minutos
+    fin:
+        mov al, Crono_Minutos      
+        aam                
+        add ax, 3030h 
+        push ax     
+        mov dl, ah 
+        ;En dl estan las decenas     
+        mov Tiempo_Total[0],dl   
+        pop dx
+        ; en dl esta en unidades 
+        mov Tiempo_Total[1], dl
+
+        mov Tiempo_Total[2],58
+
+        mov al, Crono_Segundos      
+        aam                
+        add ax, 3030h 
+        push ax     
+        mov dl, ah 
+        ;En dl estan las decenas     
+        mov Tiempo_Total[3],dl   
+        pop dx
+        ; en dl esta en unidades 
+        mov Tiempo_Total[4], dl
+        ret    
+Cronometro endp
+
+Hora_Reporte proc
+    mov ah, 02Ch
+    int 21h
+    mov Reporte_hora[0], ch
+    mov Reporte_minutos[0], cl
+    mov Reporte_seg[0], dh
+
+    mov al, Reporte_hora    
+    aam                
+    add ax, 3030h 
+    push ax     
+    mov dl, ah 
+    ;En dl estan las decenas     
+    mov Reporte_hora[0],dl   
+    pop dx
+    ; en dl esta en unidades 
+    mov Reporte_hora[1], dl
+    mov Reporte_hora[2],36d
+
+    mov al, Reporte_minutos    
+    aam                
+    add ax, 3030h 
+    push ax     
+    mov dl, ah 
+    ;En dl estan las decenas     
+    mov Reporte_minutos[0],dl   
+    pop dx
+    ; en dl esta en unidades 
+    mov Reporte_minutos[1], dl
+    mov Reporte_minutos[2],36d
+
+    mov al, Reporte_seg  
+    aam                
+    add ax, 3030h 
+    push ax     
+    mov dl, ah 
+    ;En dl estan las decenas     
+    mov Reporte_seg[0],dl   
+    pop dx
+    ; en dl esta en unidades 
+    mov Reporte_seg[1], dl
+    mov Reporte_seg[2],36d
+    ret
+Hora_Reporte endp
+
 end main

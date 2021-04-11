@@ -54,6 +54,20 @@ NumToAscii macro temp
     int 21h
 endm 
 
+Num_Ascii macro temp, resultado
+    mov al, temp[0]      
+    aam                
+    add ax, 3030h 
+    push ax     
+    mov dl, ah 
+    ;En dl estan las decenas     
+    mov temp[0],dl   
+    pop dx
+    ; en dl esta en unidades 
+    mov temp[1], dl
+    mov temp[2], 36            
+endm
+
 limpiar macro buffer, numbytes, caracter
 LOCAL Repetir
 	xor di,di ; colocamos en 0 el contador di
@@ -202,67 +216,73 @@ LOCAL Seg_0, Seg_1, Seg_2, Seg_3, Seg_4, Seg_5, Seg_6, Seg_7, Seg_8, Seg_9, fin
 		je Seg_8	
 	cmp al,57
 		je Seg_9	
-	Seg_0:
-		jmp fin
-	Seg_1: ; 500ms
+	Seg_0: ;500ms
 		mov cx,0007h
 		mov dx,0A120h
 		mov ah,86h
 		mov al,0
 		int 15h
 		jmp fin
-	Seg_2: ;1seg
+		jmp fin
+	Seg_1: ; 1seg
 		mov cx,000Fh
 		mov dx,04240h
 		mov ah,86h
 		mov al,0
 		int 15h
 		jmp fin
-	Seg_3: ;1.5 seg
+	Seg_2: ;1.5 seg
 		mov cx,0016h
 		mov dx,0E360h
 		mov ah,86h
 		mov al,0
 		int 15h
 		jmp fin
-	Seg_4:
+	Seg_3: ;2 seg
 		mov cx,001Eh
 		mov dx,08480h
 		mov ah,86h
 		mov al,0
 		int 15h
 		jmp fin
-	Seg_5:
+	Seg_4: ; 2.5 seg
 		mov cx,0026h
 		mov dx,025A0h
 		mov ah,86h
 		mov al,0
 		int 15h
 		jmp fin
-	Seg_6:
+	Seg_5: ; 3 seg
 		mov cx,002Dh
 		mov dx,0C6C0h
 		mov ah,86h
 		mov al,0
 		int 15h
 		jmp fin
-	Seg_7:
+	Seg_6: ; 3.5 seg
 		mov cx,0035h
 		mov dx,067E0h
 		mov ah,86h
 		mov al,0
 		int 15h
 		jmp fin
-	Seg_8:
+	Seg_7: ; 4 seg
 		mov cx,003Dh
 		mov dx,00900h
 		mov ah,86h
 		mov al,0
 		int 15h
 		jmp fin
-	Seg_9:
+	Seg_8: ;4.5 seg
 		mov cx,0044h
 		mov dx,0AA20h
+		mov ah,86h
+		mov al,0
+		int 15h
+		jmp fin
+	Seg_9: ;5 seg
+		mov cx,004Ch
+		mov dx,4B40h
 		mov ah,86h
 		mov al,0
 		int 15h
@@ -367,7 +387,13 @@ LOCAL ciclo1, Inter, ciclo2, Inter2, condicion_if, fin
         mov Columna, 40
         call Set_Cursor
         print Cadena_Tiempo ; Tiempo que tarda
-        
+
+		call Cronometro
+		mov Fila, 1
+        mov Columna, 48
+        call Set_Cursor
+        print Tiempo_Total
+
         mov Fila, 1
         mov Columna, 64
         call Set_Cursor
@@ -377,6 +403,7 @@ LOCAL ciclo1, Inter, ciclo2, Inter2, condicion_if, fin
         mov Columna, 76
         call Set_Cursor
 		print tiempo
+
 
         call Pintar_Barras
 
@@ -416,7 +443,12 @@ LOCAL ciclo1, Inter, ciclo2, Inter2, condicion_if, fin
         mov Columna, 40
         call Set_Cursor
         print Cadena_Tiempo ; Tiempo que tarda
-        
+		
+		mov Fila, 1
+        mov Columna, 48
+        call Set_Cursor
+        print Tiempo_Total
+
         mov Fila, 1
         mov Columna, 65
         call Set_Cursor
@@ -435,7 +467,7 @@ LOCAL ciclo1, Inter, ciclo2, Inter2, condicion_if, fin
 
         pintar_marco 21d, 190d, 10d, 630, 0fh ;Pinta el marco
         
-        Delay_Num 2500 ;Delay entre ordenamiento
+        getChar
         
         call FIN_VIDEO ;Finaliza modo video
 
@@ -443,8 +475,8 @@ LOCAL ciclo1, Inter, ciclo2, Inter2, condicion_if, fin
 		pop di
 
 
-		print vector
-		print saltolinea
+		;print vector
+		;print saltolinea
 		;print i
 		;print saltolinea
 		;print tamanio_1
@@ -524,6 +556,12 @@ LOCAL ciclo1, Inter, ciclo2, Inter2, condicion_if, fin
         call Set_Cursor
         print Cadena_Tiempo ; Tiempo que tarda
         
+		call Cronometro
+		mov Fila, 1
+        mov Columna, 48
+        call Set_Cursor
+        print Tiempo_Total
+
         mov Fila, 1
         mov Columna, 65
         call Set_Cursor
@@ -572,6 +610,11 @@ LOCAL ciclo1, Inter, ciclo2, Inter2, condicion_if, fin
         call Set_Cursor
         print Cadena_Tiempo ; Tiempo que tarda
         
+		mov Fila, 1
+        mov Columna, 48
+        call Set_Cursor
+        print Tiempo_Total
+
         mov Fila, 1
         mov Columna, 65
         call Set_Cursor
@@ -590,7 +633,7 @@ LOCAL ciclo1, Inter, ciclo2, Inter2, condicion_if, fin
 
         pintar_marco 21d, 190d, 10d, 630, 0fh ;Pinta el marco
         
-        Delay_Num 2500 ;Delay entre ordenamiento
+        getChar;Delay entre ordenamiento
         
         call FIN_VIDEO ;Finaliza modo video
 
@@ -697,6 +740,12 @@ LOCAL Ciclo1, Inter1, Ciclo2, Inter2, condicion_if, condicion_while, InterW, fin
         call Set_Cursor
         print Cadena_Tiempo ; Tiempo que tarda
         
+		call Cronometro
+		mov Fila, 1
+        mov Columna, 48
+        call Set_Cursor
+        print Tiempo_Total
+
         mov Fila, 1
         mov Columna, 65
         call Set_Cursor
@@ -766,13 +815,18 @@ LOCAL Ciclo1, Inter1, Ciclo2, Inter2, condicion_if, condicion_while, InterW, fin
         mov Fila, 1
         mov Columna, 1
         call Set_Cursor
-        print Ordenamiento_Burbuja ; Tipo de Ordenamiento
+        print Ordenamiento_Shell ; Tipo de Ordenamiento
 
         mov Fila, 1
         mov Columna, 40
         call Set_Cursor
         print Cadena_Tiempo ; Tiempo que tarda
         
+		mov Fila, 1
+        mov Columna, 48
+        call Set_Cursor
+        print Tiempo_Total
+
         mov Fila, 1
         mov Columna, 65
         call Set_Cursor
@@ -791,7 +845,7 @@ LOCAL Ciclo1, Inter1, Ciclo2, Inter2, condicion_if, condicion_while, InterW, fin
 
         pintar_marco 21d, 190d, 10d, 630, 0fh ;Pinta el marco
         
-        Delay_Num 2500 ;Delay entre ordenamiento
+        getChar ;Delay entre ordenamiento
         
         call FIN_VIDEO ;Finaliza modo video
 
@@ -895,7 +949,13 @@ LOCAL Ciclo1, Inter1, Ciclo2, Inter2, condicion_if, condicion_while, InterW, fin
         call Set_Cursor
         print Cadena_Tiempo ; Tiempo que tarda
         
-        mov Fila, 1
+        call Cronometro
+		mov Fila, 1
+        mov Columna, 48
+        call Set_Cursor
+        print Tiempo_Total
+
+		mov Fila, 1
         mov Columna, 65
         call Set_Cursor
         print Cadena_vel ; La velocidad 
@@ -972,7 +1032,12 @@ LOCAL Ciclo1, Inter1, Ciclo2, Inter2, condicion_if, condicion_while, InterW, fin
         call Set_Cursor
         print Cadena_Tiempo ; Tiempo que tarda
         
-        mov Fila, 1
+		mov Fila, 1
+        mov Columna, 48
+        call Set_Cursor
+        print Tiempo_Total
+
+		mov Fila, 1
         mov Columna, 65
         call Set_Cursor
         print Cadena_vel ; La velocidad 
@@ -990,7 +1055,7 @@ LOCAL Ciclo1, Inter1, Ciclo2, Inter2, condicion_if, condicion_while, InterW, fin
 
         pintar_marco 21d, 190d, 10d, 630, 0fh ;Pinta el marco
         
-        Delay_Num 2500 ;Delay entre ordenamiento
+        getChar ;Delay entre ordenamiento
         
         call FIN_VIDEO ;Finaliza modo video
 
